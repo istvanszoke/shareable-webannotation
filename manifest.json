@@ -1,18 +1,24 @@
 {
- "name": "studio_project",
- "version": "0.1",
- "description": "Selected Text",
- "manifest_version": 2,
- "browser_action": {
-   "default_title": "studio_project",
-   "default_icon": "on.png",
-   "default_popup": "popup.html" 
- },
- "permissions": [
-   "tabs",
+  "manifest_version": 2,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0W0/YVPvLrj2cWBOXfPBBYwPp56R+OJb9QLudyMpigF+V4DFV0NEUnbo9iA6m+7cVPiD6YbhbIaiAoHSdtqEKwaYvrEJRGuGsLjDq+RMwG2x+FcGIsO4ny0BuZaZ/Q2+DaL33NBUl2h9dIi1xa0Suq6qpoJ4yykTu9y7Q6rB9ulJze6DiZL7LWU5NzHCEWt21zAhpLZOqvYY8wzY69pMf+P0+uOLuy87x84rvCRNegbSmEYLC5f4y6ikjVnFUxJBxMlpMg3bByxbrLVBFPuHj4khkr6adUXgks2vBBHFcrRh5EYXopI+PLwUJPfFtzyN8+L7swen9kcK8gXMwX28KwIDAQAB",
+  "name": "Web annotator",
+  "description": "This is a webpage annotator. This makes possible to share your notes.",
+  "version": "1.0",
+
+  "permissions": [
+    "identity",
+	"tabs",
    "<all_urls>"
- ],
- "content_scripts": [
+  ],
+  "oauth2": {
+    "client_id": "1014705257182-52dddl9dbiec2ln22stokphlaq0v7gor.apps.googleusercontent.com",
+    "scopes": [ "profile" ]
+  },
+  "browser_action": {
+    "default_icon": "img/icon.png",
+    "default_popup": "popup.html"
+  },
+   "content_scripts": [
    {
      "matches": ["<all_urls>"],
      "js": ["selection.js"],
