@@ -7,13 +7,24 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         var range = document.getSelection().getRangeAt(0);
         
         var start = range.startContainer;
-        var text = "lvl: 0 offset: " + range.startOffset.toString() + "\n";
+        var startPosition = "o" + range.startOffset.toString() + ";";
         var level = 0;
-        text = getPosition(start, text, level);
-
-            
+        startPosition = getPosition(start, startPosition, level);
         
-        sendResponse({ data: text});
+        var end = range.endContainer;
+        var endPosition = "o" + range.endOffset.toString() + ";";
+        var level = 0;
+        endPosition = getPosition(end, endPosition, level);
+        
+        
+        
+        
+        sendResponse({ data: "start" + startPosition + "end" + endPosition});
+        styleElementsInRange(range);
+    }
+    if (request.method == "select")
+    {
+        
     }
     else
         sendResponse({}); // snub them.
@@ -21,39 +32,29 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
 
 function getPosition(current, text, level){
     level++;
-    text +="lvl: " + level + " ";
     if (current == null)
         return text;
     
     if (current.nodeType == 3) {
-        text += " text "  + "\n";
-        text = getPosition(current.parentElement, text, level);
-    }
-    
-    else if (current.id == ""){
-        var remainingSiblingsCount = 0;
-        var sibling = current;
-        while (current.nextElementSibling !== null){
-            remainingSiblingsCount++;
-            current = current.nextElementSibling;
-        }
-        text +=" rS: " + remainingSiblingsCount  + " class: " + current.className + "\n";
         text = getPosition(current.parentElement, text, level);
     }
     else {
-        text += " id: " + current.id;
-        text += " childs: " + current.childElementCount  +  " class: " + current.className + "\n";
+        var remainingSiblingsCount = 0;
+        var sibling = current;
+        while (sibling.nextElementSibling !== null){
+            remainingSiblingsCount++;
+            sibling = sibling.nextElementSibling;
+        }
+        text +="rS" + remainingSiblingsCount + "c" + current.childElementCount + ";";
         text = getPosition(current.parentElement, text, level);
     }
     
-    return text;
-        
-        
+    return text;        
 }
 
 
 
-function getElementsBetweenTree(range) {
+function styleElementsInRange(range) {
     var ancestor = range.commonAncestorContainer;
     var start = range.startContainer;
     var end = range.endContainer;
@@ -61,21 +62,30 @@ function getElementsBetweenTree(range) {
     var before = [];
     while (start.parentNode !== ancestor) {
         var el = start;
-        while (el.nextSibling)
+        while (el.nextSibling){
+            if (el.nodeType == 1)
+                el.style.background = "yellow";
             before.push(el = el.nextSibling);
+        }
         start = start.parentNode;
     }
 
     var after = [];
     while (end.parentNode !== ancestor) {
         var el = end;
-        while (el.previousSibling)
+        while (el.previousSibling){
+            if (el.nodeType == 1)
+                el.style.background = "yellow";
             after.push(el = el.previousSibling);
+        }
         end = end.parentNode;
     }
     after.reverse();
 
-    while ((start = start.nextSibling) !== end)
+    while ((start = start.nextSibling) !== end){
+        if (el.nodeType == 1)
+            start.style.background = "yellow";
         before.push(start);
+    }
     return before.concat(after);
 }

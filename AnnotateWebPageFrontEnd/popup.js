@@ -65,6 +65,16 @@ function pasteSelection() {
         function (response) {
             var text = document.getElementById('text');
             text.innerHTML = response.data;
+            /*
+            chrome.tabs.sendMessage(tab[0].id, 
+                                    {method: "select",
+                                     start: respone.start,
+                                     end: respone.end},
+                                    function (response2){
+                                        
+                                    }
+                                    )
+            */
         });
     });
 }
