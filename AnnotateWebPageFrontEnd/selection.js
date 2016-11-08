@@ -19,8 +19,13 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         
         
         
+        
         sendResponse({ data: "start" + startPosition + "end" + endPosition});
         styleElementsInRange(range);
+        /*
+        var newNode = document.createElement("p");
+        range.surroundContents(newNode);
+        newNode.style.background = "red";*/
     }
     if (request.method == "select")
     {
@@ -60,7 +65,14 @@ function styleElementsInRange(range) {
     var end = range.endContainer;
 
     var before = [];
-    while (start.parentNode !== ancestor) {
+    
+    
+    start.parentNode.style.background = "yellow";
+    end.parentNode.style.background = "yellow";
+        
+    
+    while (start.parentNode !== ancestor &&
+           start !== ancestor) {
         var el = start;
         while (el.nextSibling){
             if (el.nodeType == 1)
@@ -71,7 +83,8 @@ function styleElementsInRange(range) {
     }
 
     var after = [];
-    while (end.parentNode !== ancestor) {
+    while (end.parentNode !== ancestor &&
+           start !== ancestor) {
         var el = end;
         while (el.previousSibling){
             if (el.nodeType == 1)
@@ -83,7 +96,7 @@ function styleElementsInRange(range) {
     after.reverse();
 
     while ((start = start.nextSibling) !== end){
-        if (el.nodeType == 1)
+        if (start.nodeType == 1)
             start.style.background = "yellow";
         before.push(start);
     }
