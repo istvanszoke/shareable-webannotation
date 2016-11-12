@@ -5,6 +5,16 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="AnnotateWebPageDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Highlight">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" />
+          <Property Name="User_id" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Web_page" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="start" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="end" Type="nvarchar" MaxLength="100" Nullable="false" />
+        </EntityType>
         <EntityType Name="User">
           <Key>
             <PropertyRef Name="id" />
@@ -12,8 +22,25 @@
           <Property Name="id" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
         </EntityType>
+        <Association Name="FK_Highlight_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="Highlight" Type="Self.Highlight" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Highlight">
+              <PropertyRef Name="User_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="AnnotateWebPageDBModelStoreContainer">
+          <EntitySet Name="Highlight" EntityType="Self.Highlight" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Highlight_User" Association="Self.FK_Highlight_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="Highlight" EntitySet="Highlight" />
+          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -21,6 +48,11 @@
       <Schema Namespace="AnnotateWebPageDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="AnnotateWebPageDBEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="User" EntityType="AnnotateWebPageDBModel.User" />
+          <EntitySet Name="Highlight" EntityType="AnnotateWebPageDBModel.Highlight" />
+          <AssociationSet Name="FK_Highlight_User" Association="AnnotateWebPageDBModel.FK_Highlight_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="Highlight" EntitySet="Highlight" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="User">
           <Key>
@@ -28,7 +60,31 @@
           </Key>
           <Property Name="id" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="name" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Highlight" Relationship="AnnotateWebPageDBModel.FK_Highlight_User" FromRole="User" ToRole="Highlight" />
         </EntityType>
+        <EntityType Name="Highlight">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="user_id" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="web_page" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="User" Relationship="AnnotateWebPageDBModel.FK_Highlight_User" FromRole="Highlight" ToRole="User" />
+          <Property Name="start" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="end" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_Highlight_User">
+          <End Type="AnnotateWebPageDBModel.User" Role="User" Multiplicity="1" />
+          <End Type="AnnotateWebPageDBModel.Highlight" Role="Highlight" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Highlight">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -40,6 +96,17 @@
               <MappingFragment StoreEntitySet="User">
                 <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Highlight">
+            <EntityTypeMapping TypeName="AnnotateWebPageDBModel.Highlight">
+              <MappingFragment StoreEntitySet="Highlight">
+                <ScalarProperty Name="end" ColumnName="end" />
+                <ScalarProperty Name="start" ColumnName="start" />
+                <ScalarProperty Name="web_page" ColumnName="Web_page" />
+                <ScalarProperty Name="user_id" ColumnName="User_id" />
+                <ScalarProperty Name="id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

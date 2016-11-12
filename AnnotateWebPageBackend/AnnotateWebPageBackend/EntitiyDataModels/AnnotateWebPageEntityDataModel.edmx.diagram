@@ -6,6 +6,8 @@
     <edmx:Diagrams>
       <Diagram DiagramId="7e3155bddf8242839582d645f47fe490" Name="Diagram1">
         <EntityTypeShape EntityType="AnnotateWebPageDBModel.User" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Highlight" Width="1.5" PointX="3" PointY="4.5" />
+        <AssociationConnector Association="AnnotateWebPageDBModel.FK_Highlight_User" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

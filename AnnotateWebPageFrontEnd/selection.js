@@ -7,25 +7,30 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         var range = document.getSelection().getRangeAt(0);
         
         var start = range.startContainer;
-        var startPosition = "o" + range.startOffset.toString() + ";";
         var level = 0;
-        startPosition = getPosition(start, startPosition, level);
+        var startPositionJSON = { "offset" : range.startOffset.toString(),
+                                  "elements" : []};
         
-        var end = range.endContainer;
-        var endPosition = "o" + range.endOffset.toString() + ";";
-        var level = 0;
-        endPosition = getPosition(end, endPosition, level);
+        startPositionJSON = getPositionJSON(start, startPositionJSON, level);
         
         
+        var end = range.endContainer;        
+        level = 0;
+        var endPositionJSON = { "offset" : range.endOffset.toString(),
+                                "elements" : []};
         
+        endPositionJSON = getPositionJSON(end, endPositionJSON, level);
         
+        /*var startElem = getElementByPosition(startPositionJSON);
+        var endElem = getElementByPosition(endPositionJSON);
         
-        sendResponse({ data: "start" + startPosition + "end" + endPosition});
-        styleElementsInRange(range);
-        /*
-        var newNode = document.createElement("p");
-        range.surroundContents(newNode);
-        newNode.style.background = "red";*/
+        var range2 = document.createRange();
+        range2.setStart(startElem, 0);
+        range2.setEnd(endElem, 0);*/
+        
+        sendResponse({ "start" : startPositionJSON,
+                       "end" : endPositionJSON});
+  
     }
     if (request.method == "select")
     {
@@ -35,6 +40,50 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         sendResponse({}); // snub them.
 });
 
+function postSelection(start, end){
+    
+}
+
+
+function getElementByPosition(position){
+    var root = document.documentElement;
+    var elem = root;
+    for (i = 1; i < position.elements.length; i++){
+        if (elem.nodeType != 3) {
+            elem = elem.children[elem.childElementCount - position.elements[i].remainingSiblings - 1];
+        }
+    }
+    
+    return elem;
+}
+
+// this function returns the position of current in the DOM
+function getPositionJSON(current, position, level){
+    level++;
+    if (current == null)
+        return position;
+    
+    if (current.nodeType == 3) {
+        position = getPositionJSON(current.parentElement, position, level);
+    }
+    else {
+        var remainingSiblingsCount = 0;
+        var sibling = current;
+        while (sibling.nextElementSibling !== null){
+            remainingSiblingsCount++;
+            sibling = sibling.nextElementSibling;
+        }
+        elem = {"remainingSiblings" : remainingSiblingsCount, 
+                "childs" : current.childElementCount};
+        position.elements.unshift(elem);
+        position = getPositionJSON(current.parentElement, position, level);
+    }
+    
+    return position;        
+}
+
+
+// this function returns the position of current in the DOM
 function getPosition(current, text, level){
     level++;
     if (current == null)

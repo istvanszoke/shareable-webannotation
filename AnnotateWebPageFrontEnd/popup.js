@@ -6,6 +6,7 @@ $(function () {
 });
 
 var url = 'http://localhost:5066/api/';
+var userId = '';
 function handleUser(action) {
     chrome.identity.getAuthToken({
         interactive: true
@@ -18,7 +19,8 @@ function handleUser(action) {
         getToken.open('GET', 'https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=' + token);
         getToken.onload = function () {
             console.log(getToken.response);
-            var id = JSON.parse(getToken.response).id;
+            userId = JSON.parse(getToken.response).id;
+            
             var name = JSON.parse(getToken.response).name;
 
             switch (action) {
@@ -27,7 +29,7 @@ function handleUser(action) {
                     post.open('POST', url + 'Users');
                     post.setRequestHeader('Content-type', 'application/json');
                     var user = new Object();
-                    user.id = id;
+                    user.id = userId;
                     user.name = name;
                     var jsonUser = JSON.stringify(user);
 
@@ -38,7 +40,7 @@ function handleUser(action) {
                     break;
                 case 'login':
                     var getUserById = new XMLHttpRequest();
-                    getUserById.open('GET', url + 'Users/' + id);
+                    getUserById.open('GET', url + 'Users/' + userId);
                     getUserById.onload = function () {                       
                         welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
                     };
@@ -79,13 +81,33 @@ function pasteSelection() {
     });
 }
 
+function highlightInsertionCallback(request, statusCode, text, errorText){
+    var text = document.getElementById('text');
+    text.innerHtml = "status: " + statusCode;
+}
+
 function pasteParentBlock() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         chrome.tabs.sendMessage(tab[0].id, { method: "getBlock" },
         function (response) {
-            var text = document.getElementById('text');
-            text.innerHTML = response.data;
+            if (userId !== ''){
+                var post = new XMLHttpRequest();
+                post.open('POST', url + 'Highlights');
+                post.setRequestHeader('Content-type', 'application/json');
+                var highlight = new Object();
+                highlight.id = 0;
+                highlight.user_id = userId;
+                highlight.web_page = tab[0].id;
+                highlight.start = response.start;
+                highlight.end = response.end;
+                var jsonHighlight = JSON.stringify(highlight);
+
+                post.onload = function () {
+                    welcomeUser(post, 201, 'Registration successful. Please log in', 'Error: User already exists.');
+                }
+                post.send(jsonHighlight);                
+            }
         });
     });
 }

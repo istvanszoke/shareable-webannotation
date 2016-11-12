@@ -34,9 +34,10 @@ namespace AnnotateWebPageBackend.Models
                 }
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw;
+                // throw;
+                return null;
             }
 
         }
@@ -58,7 +59,7 @@ namespace AnnotateWebPageBackend.Models
                 }
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 //throw;
                 return null;
