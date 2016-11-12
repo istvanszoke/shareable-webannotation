@@ -29,7 +29,7 @@ namespace AnnotateWebPageBackend.Controllers
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(user.name);
         }
 
         public IHttpActionResult Post([FromBody]User user)

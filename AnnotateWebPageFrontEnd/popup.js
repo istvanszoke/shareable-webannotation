@@ -55,7 +55,7 @@ function handleUser(action) {
 function welcomeUser(request, statusCode, text, errorText) {
     var welcome = document.getElementById('welcome');
     if (request.status == statusCode) {
-        var name = JSON.parse(request.response).name;
+        var name = JSON.parse(request.response);
         welcome.innerHTML = text + ' '+ name + ' !';;
     }
     else welcome.innerHTML = errorText;
