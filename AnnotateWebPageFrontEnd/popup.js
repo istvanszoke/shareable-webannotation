@@ -1,4 +1,5 @@
 $(function () {
+    $('#document').ready(pageOnload);
     $('#register').click(function () { handleUser('register'); });
     $('#login').click(function () { handleUser('login'); });
     $('#paste').click(function () { pasteSelection(); });
@@ -8,6 +9,22 @@ $(function () {
 
 var url = 'http://localhost:5066/api/';
 var userId = '';
+var userName = '';
+function pageOnload() {
+    console.log(localStorage.getItem("userId"));
+    var welcome = document.getElementById('welcome');
+    if (localStorage.getItem("userId") != null)
+    {
+        userId = localStorage.getItem("userId");
+        userName = localStorage.getItem("userName");
+        welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
+    }
+    else
+    {
+       
+        welcome.innerHTML = 'Welcome to WebAnnotator!';
+    }
+}
 function handleUser(action) {
     chrome.identity.getAuthToken({
         interactive: true
@@ -20,9 +37,13 @@ function handleUser(action) {
         getToken.open('GET', 'https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=' + token);
         getToken.onload = function () {
             console.log(getToken.response);
-            userId = JSON.parse(getToken.response).id;
-            
-            var name = JSON.parse(getToken.response).name;
+            userId = userId = JSON.parse(getToken.response).id;            
+            userName = JSON.parse(getToken.response).name;
+
+            if (localStorage.getItem("userId") === null) {
+                localStorage.setItem("userId", userId);
+                localStorage.setItem("userName", userName);
+            }
 
             switch (action) {
                 case 'register':
@@ -31,7 +52,7 @@ function handleUser(action) {
                     post.setRequestHeader('Content-type', 'application/json');
                     var user = new Object();
                     user.id = userId;
-                    user.name = name;
+                    user.name = userName;
                     var jsonUser = JSON.stringify(user);
 
                     post.onload = function () {
@@ -53,11 +74,12 @@ function handleUser(action) {
     });
 }
 
+
 function welcomeUser(request, statusCode, text, errorText) {
     var welcome = document.getElementById('welcome');
     if (request.status == statusCode) {
         var name = JSON.parse(request.response);
-        welcome.innerHTML = text + ' '+ name + ' !';;
+        welcome.innerHTML = text + ' '+ name + ' !';
     }
     else welcome.innerHTML = errorText;
 }
@@ -96,6 +118,8 @@ function selectHighlight() {
                 var post = new XMLHttpRequest();
                 post.open('POST', url + 'Highlights');
                 post.setRequestHeader('Content-type', 'application/json');
+
+                console.log(response);
                 var highlight = new Object();
                 highlight.id = 0;
                 highlight.user_id = userId;
@@ -103,11 +127,12 @@ function selectHighlight() {
                 highlight.start = response.start;
                 highlight.end = response.end;
                 var jsonHighlight = JSON.stringify(highlight);
-
-                post.onload = function () {
-                    welcomeUser(post, 201, 'Registration successful. Please log in', 'Error: User already exists.');
-                }
                 post.send(jsonHighlight);                
+            }
+            else
+            {
+                var welcome = document.getElementById('welcome');
+                welcome.innerHTML = 'To use this function, please login first!';
             }
         });
     });
