@@ -113,9 +113,10 @@ function styleElementsInRange(range) {
 
     var before = [];
     
-    
-    start.parentNode.style.background = "yellow";
-    end.parentNode.style.background = "yellow";
+    console.log("dsgfg");
+    var color = "yellow";//document.getElementById('colorpicker').style.backgroundColor;
+    start.parentNode.style.background = color;
+    end.parentNode.style.background = color;
         
     
     while (start.parentNode !== ancestor &&
@@ -123,7 +124,7 @@ function styleElementsInRange(range) {
         var el = start;
         while (el.nextSibling){
             if (el.nodeType == 1)
-                el.style.background = "yellow";
+                el.style.background = color;
             before.push(el = el.nextSibling);
         }
         start = start.parentNode;
@@ -135,7 +136,7 @@ function styleElementsInRange(range) {
         var el = end;
         while (el.previousSibling){
             if (el.nodeType == 1)
-                el.style.background = "yellow";
+                el.style.background = color;
             after.push(el = el.previousSibling);
         }
         end = end.parentNode;
@@ -144,7 +145,7 @@ function styleElementsInRange(range) {
 
     while ((start = start.nextSibling) !== end){
         if (start.nodeType == 1)
-            start.style.background = "yellow";
+            start.style.background = color;
         before.push(start);
     }
     return before.concat(after);
