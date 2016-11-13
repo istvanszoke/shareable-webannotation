@@ -41,6 +41,17 @@ namespace AnnotateWebPageBackend.Models
 
         }
 
+        public List<Highlight> GetHighlightsByUserAndUrl(string userId, string url)
+        {
+            using (var db = new AnnotateWebPageDBEntities())
+            {
+                return db.Highlight.Where(s => (s.user_id == userId))
+                                   .Where(s => (s.web_page == url)).ToList<Highlight>();
+                
+            }
+            return null;
+        }
+
         public Highlight InsertHighlight(Highlight highlight)
         {
             try

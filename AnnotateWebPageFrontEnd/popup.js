@@ -2,7 +2,8 @@ $(function () {
     $('#register').click(function () { handleUser('register'); });
     $('#login').click(function () { handleUser('login'); });
     $('#paste').click(function () { pasteSelection(); });
-    $('#block').click(function () { pasteParentBlock(); });
+    $('#select').click(function () { selectHighlight(); });
+    $('#getmyannotations').click(function () { getAnnotation(); });
 });
 
 var url = 'http://localhost:5066/api/';
@@ -86,7 +87,7 @@ function highlightInsertionCallback(request, statusCode, text, errorText){
     text.innerHtml = "status: " + statusCode;
 }
 
-function pasteParentBlock() {
+function selectHighlight() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         chrome.tabs.sendMessage(tab[0].id, { method: "getBlock" },
@@ -98,7 +99,7 @@ function pasteParentBlock() {
                 var highlight = new Object();
                 highlight.id = 0;
                 highlight.user_id = userId;
-                highlight.web_page = tab[0].id;
+                highlight.web_page = tab[0].url;
                 highlight.start = response.start;
                 highlight.end = response.end;
                 var jsonHighlight = JSON.stringify(highlight);
@@ -109,5 +110,17 @@ function pasteParentBlock() {
                 post.send(jsonHighlight);                
             }
         });
+    });
+}
+
+function getAnnotation(){
+    chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+    function (tab) {
+        var get = new XMLHttpRequest();
+        get.open('GET', url + 'Highlights/' + userId + "/" + tab[0].url);
+        get.onload = function () {                       
+            welcomeUser(get, 200, 'Welcome', 'Error: User does not exist.');
+            };
+        get.send();
     });
 }

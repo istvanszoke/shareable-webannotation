@@ -13,7 +13,6 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         
         startPositionJSON = getPositionJSON(start, startPositionJSON, level);
         
-        
         var end = range.endContainer;        
         level = 0;
         var endPositionJSON = { "offset" : range.endOffset.toString(),
@@ -21,6 +20,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         
         endPositionJSON = getPositionJSON(end, endPositionJSON, level);
         
+        styleElementsInRange(start, end);
         /*var startElem = getElementByPosition(startPositionJSON);
         var endElem = getElementByPosition(endPositionJSON);
         
@@ -32,7 +32,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
                        "end" : endPositionJSON});
   
     }
-    if (request.method == "select")
+    if (request.method == "select") 
     {
         
     }
@@ -40,9 +40,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         sendResponse({}); // snub them.
 });
 
-function postSelection(start, end){
-    
-}
+
 
 
 function getElementByPosition(position){
