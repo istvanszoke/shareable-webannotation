@@ -4,7 +4,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         sendResponse({ data: window.getSelection().toString() });
     if (request.method == "getBlock") {
         //Get the range of a selection and find out the id of the DOM objects.
-        var range = document.getSelection().getRangeAt(0);
+        var range = window.getSelection().getRangeAt(0);
         
         var start = range.startContainer;
         var level = 0;
@@ -20,7 +20,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         
         endPositionJSON = getPositionJSON(end, endPositionJSON, level);
         
-        styleElementsInRange(start, end);
+        styleElementsInRange(range);
         /*var startElem = getElementByPosition(startPositionJSON);
         var endElem = getElementByPosition(endPositionJSON);
         
