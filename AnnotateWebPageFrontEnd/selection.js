@@ -8,19 +8,51 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         
         var start = range.startContainer;
         var level = 0;
-        var startPositionJSON = { "offset" : range.startOffset.toString(),
+        var startOffset = range.startOffset;
+        var startPositionJSON = { "offset" : startOffset.toString(),
                                   "elements" : []};
         
         startPositionJSON = getPositionJSON(start, startPositionJSON, level);
         
         var end = range.endContainer;        
         level = 0;
-        var endPositionJSON = { "offset" : range.endOffset.toString(),
+        var endOffset = range.endOffset;
+        var endPositionJSON = { "offset" : endOffset.toString(),
                                 "elements" : []};
         
         endPositionJSON = getPositionJSON(end, endPositionJSON, level);
         
-        styleElementsInRange(range);
+        //var extracted = range.extractContents();
+        //extracted.appendChild(document.createElement("style"));
+       
+        
+        if (start == end){
+            var surround = document.createElement("bdi");
+            range.surroundContents(surround);
+            surround.style.background = "yellow";
+        }
+            
+        else{
+            var rangeStart = document.createRange();
+            rangeStart.setStart(start, startOffset);
+            rangeStart.setEnd(start, start.length);
+            var surroundStart = document.createElement("bdi");
+            rangeStart.surroundContents(surroundStart);
+            surroundStart.style.background = "yellow";
+            
+            var rangeEnd = document.createRange();
+            rangeEnd.setStart(end, 0);
+            rangeEnd.setEnd(end, endOffset);
+            var surroundEnd = document.createElement("bdi");
+            rangeEnd.surroundContents(surroundEnd);
+            surroundEnd.style.background = "yellow";
+
+            
+            
+        }
+        
+        
+        //styleElementsInRange(range);
         /*var startElem = getElementByPosition(startPositionJSON);
         var endElem = getElementByPosition(endPositionJSON);
         
@@ -114,8 +146,8 @@ function styleElementsInRange(range) {
     var before = [];
     
     
-    start.parentNode.style.background = "yellow";
-    end.parentNode.style.background = "yellow";
+    //start.parentNode.style.background = "yellow";
+    //end.parentNode.style.background = "yellow";
         
     
     while (start.parentNode !== ancestor &&
