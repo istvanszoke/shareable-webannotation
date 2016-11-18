@@ -15,25 +15,22 @@ var userName = null;
 var defaultWelcomeText = 'Welcome to WebAnnotator!';
 function pageOnload() {
     var welcome = document.getElementById('welcome');
-    //console.log(localStorage.getItem('userId') === null);
-    if (localStorage.getItem('userId') !== null)
-    {
+    if (localStorage.getItem('userId') !== null && localStorage.getItem('userId') !== 'null') {
         userId = localStorage.getItem('userId');
         userName = localStorage.getItem('userName');
         welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
     }
-    else
-    {       
+    else {
         welcome.innerHTML = defaultWelcomeText;
     }
 }
 
 function logoutUser() {
-    if (localStorage.getItem('userId') !== null) {
-        userId = localStorage.setItem('userId', null);
-        userName = localStorage.setItem('userName', null);
-        welcome.innerHTML = defaultWelcomeText;
-    }
+    localStorage.setItem('userId', null);
+    localStorage.setItem('userName', null);
+    userId = userName = null;
+    welcome.innerHTML = defaultWelcomeText;
+
 }
 function handleUser(action) {
     chrome.identity.getAuthToken({
@@ -46,11 +43,11 @@ function handleUser(action) {
         var getToken = new XMLHttpRequest();
         getToken.open('GET', 'https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=' + token);
         getToken.onload = function () {
-            console.log(getToken.response);
-            userId = userId = JSON.parse(getToken.response).id;            
+            //console.log(getToken.response);
+            userId = JSON.parse(getToken.response).id;
             userName = JSON.parse(getToken.response).name;
 
-            if (localStorage.getItem('userId') === null) {
+            if (localStorage.getItem('userId') === null || localStorage.getItem('userId') === 'null') {
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('userName', userName);
             }
@@ -73,7 +70,7 @@ function handleUser(action) {
                 case 'login':
                     var getUserById = new XMLHttpRequest();
                     getUserById.open('GET', url + 'Users/' + userId);
-                    getUserById.onload = function () {                       
+                    getUserById.onload = function () {
                         welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
                     };
                     getUserById.send();
@@ -89,7 +86,7 @@ function welcomeUser(request, statusCode, text, errorText) {
     var welcome = document.getElementById('welcome');
     if (request.status == statusCode) {
         var name = JSON.parse(request.response);
-        welcome.innerHTML = text + ' '+ name + ' !';
+        welcome.innerHTML = text + ' ' + name + ' !';;
     }
     else welcome.innerHTML = errorText;
 }
@@ -114,7 +111,7 @@ function pasteSelection() {
     });
 }
 
-function highlightInsertionCallback(request, statusCode, text, errorText){
+function highlightInsertionCallback(request, statusCode, text, errorText) {
     var text = document.getElementById('text');
     text.innerHtml = 'status: ' + statusCode;
 }
@@ -135,10 +132,9 @@ function selectHighlight() {
                 highlight.start = response.start;
                 highlight.end = response.end;
                 var jsonHighlight = JSON.stringify(highlight);
-                post.send(jsonHighlight);                
+                post.send(jsonHighlight);
             }
-            else
-            {
+            else {
                 var welcome = document.getElementById('welcome');
                 welcome.innerHTML = 'To use this function, please login first!';
             }
@@ -146,14 +142,14 @@ function selectHighlight() {
     });
 }
 
-function getAnnotation(){
+function getAnnotation() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var get = new XMLHttpRequest();
         get.open('GET', url + 'Highlights/' + userId + '/' + tab[0].url);
-        get.onload = function () {                       
+        get.onload = function () {
             welcomeUser(get, 200, 'Welcome', 'Error: User does not exist.');
-            };
+        };
         get.send();
     });
 }

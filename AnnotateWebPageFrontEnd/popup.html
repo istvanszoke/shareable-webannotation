@@ -13,22 +13,59 @@
         }
 
         textarea {
-            width: 250px;
+            width: 92%;
             height: 100px;
         }
 
-        input{
-            margin: 5px;
+        input {
             height: 100px;
             width: 250px;
         }
-        button, input, textarea {
-            font-family: inherit;
-            font-size: 100%;
+
+        button, input, textarea, div {
+            margin: 2px;
+            font-family: 'Helvetica';
+            font-size: 15px;
+        }
+
+        button {
+            background: #3498db;
+            background-image: linear-gradient(to bottom, #3498db, #2980b9);
+            border-radius: 6px;
+            border: 1px solid;
+            display: inline-block;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 6px 18px;
+            text-decoration: none;
+        }
+
+        button:hover {
+            background: #3cb0fd;
+            background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+            text-decoration: none;
+        }
+
+        textarea {
+            border-radius: 6px;
+            border: 1px solid #3498db;
+            outline: none;
+        }
+
+        #welcome {
+            font-size: 20px;
+            margin: 15px 5px 15px 5px;
+            text-align: center;
+        }
+
+        #icon {
+            height: 12px;
         }
     </style>
 </head>
 <body>
+    <img id="icon" src="img/icon.png">
+    WebAnnotator
     <div id="welcome"></div>
     <br />
     <div>
