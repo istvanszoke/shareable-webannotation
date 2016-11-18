@@ -24,7 +24,7 @@ function pageOnload() {
         welcome.innerHTML = defaultWelcomeText;
     }
 }
-
+       
 function logoutUser() {
     localStorage.setItem('userId', null);
     localStorage.setItem('userName', null);
@@ -129,10 +129,12 @@ function selectHighlight() {
                 highlight.id = 0;
                 highlight.user_id = userId;
                 highlight.web_page = tab[0].url;
-                highlight.start = response.start;
-                highlight.end = response.end;
+                highlight.start = JSON.stringify(response.start);
+                highlight.end = JSON.stringify(response.end);
                 var jsonHighlight = JSON.stringify(highlight);
-                post.send(jsonHighlight);
+                post.onload = function () {}
+                console.log(jsonHighlight);
+                post.send(jsonHighlight);                
             }
             else {
                 var welcome = document.getElementById('welcome');
@@ -145,12 +147,32 @@ function selectHighlight() {
 function getAnnotation() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        var get = new XMLHttpRequest();
-        get.open('GET', url + 'Highlights/' + userId + '/' + tab[0].url);
-        get.onload = function () {
-            welcomeUser(get, 200, 'Welcome', 'Error: User does not exist.');
-        };
-        get.send();
+        var post = new XMLHttpRequest();
+        post.open('POST', url + 'Highlights');
+        post.setRequestHeader('Content-type', 'application/json');
+
+        var highlight = new Object();
+        highlight.id = -1; //query
+        highlight.user_id = userId;
+        highlight.web_page = tab[0].url;
+        highlight.start = null;
+        highlight.end = null;
+        var jsonHighlight = JSON.stringify(highlight);
+
+        post.onreadystatechange = function () {
+            var resp = post.response;
+            var obj = JSON.parse(resp);
+            obj = JSON.parse(obj);
+            for (i = 0; i < obj.length; i++){
+                obj[i].start = JSON.parse(obj[i].start);
+                obj[i].end = JSON.parse(obj[i].end);
+            }
+            //select and list
+
+            console.log(post.response)
+        }
+
+        post.send(jsonHighlight);
     });
 }
 
