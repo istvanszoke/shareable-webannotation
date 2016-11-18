@@ -2,27 +2,37 @@ $(function () {
     $('#document').ready(pageOnload);
     $('#register').click(function () { handleUser('register'); });
     $('#login').click(function () { handleUser('login'); });
+    $('#logout').click(function () { logoutUser(); });
     $('#paste').click(function () { pasteSelection(); });
     $('#select').click(function () { selectHighlight(); });
     $('#getmyannotations').click(function () { getAnnotation(); });
+    $('#add').click(function () { addTextAreas(); });
 });
 
 var url = 'http://localhost:5066/api/';
-var userId = '';
-var userName = '';
+var userId = null;
+var userName = null;
+var defaultWelcomeText = 'Welcome to WebAnnotator!';
 function pageOnload() {
-    console.log(localStorage.getItem("userId"));
     var welcome = document.getElementById('welcome');
-    if (localStorage.getItem("userId") != null)
+    //console.log(localStorage.getItem('userId') === null);
+    if (localStorage.getItem('userId') !== null)
     {
-        userId = localStorage.getItem("userId");
-        userName = localStorage.getItem("userName");
+        userId = localStorage.getItem('userId');
+        userName = localStorage.getItem('userName');
         welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
     }
     else
-    {
-       
-        welcome.innerHTML = 'Welcome to WebAnnotator!';
+    {       
+        welcome.innerHTML = defaultWelcomeText;
+    }
+}
+
+function logoutUser() {
+    if (localStorage.getItem('userId') !== null) {
+        userId = localStorage.setItem('userId', null);
+        userName = localStorage.setItem('userName', null);
+        welcome.innerHTML = defaultWelcomeText;
     }
 }
 function handleUser(action) {
@@ -40,9 +50,9 @@ function handleUser(action) {
             userId = userId = JSON.parse(getToken.response).id;            
             userName = JSON.parse(getToken.response).name;
 
-            if (localStorage.getItem("userId") === null) {
-                localStorage.setItem("userId", userId);
-                localStorage.setItem("userName", userName);
+            if (localStorage.getItem('userId') === null) {
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('userName', userName);
             }
 
             switch (action) {
@@ -86,13 +96,13 @@ function welcomeUser(request, statusCode, text, errorText) {
 function pasteSelection() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        chrome.tabs.sendMessage(tab[0].id, { method: "getSelection" },
+        chrome.tabs.sendMessage(tab[0].id, { method: 'getSelection' },
         function (response) {
             var text = document.getElementById('text');
             text.innerHTML = response.data;
             /*
             chrome.tabs.sendMessage(tab[0].id, 
-                                    {method: "select",
+                                    {method: 'select',
                                      start: respone.start,
                                      end: respone.end},
                                     function (response2){
@@ -106,20 +116,18 @@ function pasteSelection() {
 
 function highlightInsertionCallback(request, statusCode, text, errorText){
     var text = document.getElementById('text');
-    text.innerHtml = "status: " + statusCode;
+    text.innerHtml = 'status: ' + statusCode;
 }
 
 function selectHighlight() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        chrome.tabs.sendMessage(tab[0].id, { method: "getBlock" },
+        chrome.tabs.sendMessage(tab[0].id, { method: 'getBlock' },
         function (response) {
-            if (userId !== ''){
+            if (userId !== null) {
                 var post = new XMLHttpRequest();
                 post.open('POST', url + 'Highlights');
                 post.setRequestHeader('Content-type', 'application/json');
-
-                console.log(response);
                 var highlight = new Object();
                 highlight.id = 0;
                 highlight.user_id = userId;
@@ -142,10 +150,16 @@ function getAnnotation(){
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var get = new XMLHttpRequest();
-        get.open('GET', url + 'Highlights/' + userId + "/" + tab[0].url);
+        get.open('GET', url + 'Highlights/' + userId + '/' + tab[0].url);
         get.onload = function () {                       
             welcomeUser(get, 200, 'Welcome', 'Error: User does not exist.');
             };
         get.send();
     });
+}
+
+function addTextAreas() {
+    var textarea = document.createElement('textarea');
+    textarea.id = "annotationTexts";
+    document.getElementById('annotations').appendChild(textarea);
 }
