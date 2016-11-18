@@ -12,8 +12,8 @@
           <Property Name="Id" Type="int" Nullable="false" />
           <Property Name="User_id" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="Web_page" Type="nvarchar" MaxLength="200" Nullable="false" />
-          <Property Name="start" Type="nvarchar" MaxLength="1000" Nullable="false" />
-          <Property Name="end" Type="nvarchar" MaxLength="1000" Nullable="false" />
+          <Property Name="start" Type="nvarchar" MaxLength="2000" Nullable="false" />
+          <Property Name="end" Type="nvarchar" MaxLength="2000" Nullable="false" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -70,8 +70,8 @@
           <Property Name="user_id" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="web_page" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="User" Relationship="AnnotateWebPageDBModel.FK_Highlight_User" FromRole="Highlight" ToRole="User" />
-          <Property Name="start" Type="String" Nullable="false" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="end" Type="String" Nullable="false" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="start" Type="String" Nullable="false" MaxLength="2000" FixedLength="false" Unicode="true" />
+          <Property Name="end" Type="String" Nullable="false" MaxLength="2000" FixedLength="false" Unicode="true" />
         </EntityType>
         <Association Name="FK_Highlight_User">
           <End Type="AnnotateWebPageDBModel.User" Role="User" Multiplicity="1" />

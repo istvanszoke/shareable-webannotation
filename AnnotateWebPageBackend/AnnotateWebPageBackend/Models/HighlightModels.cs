@@ -98,9 +98,9 @@ namespace AnnotateWebPageBackend.Models
                 }
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //throw;
+                
                 return null;
             }
         }

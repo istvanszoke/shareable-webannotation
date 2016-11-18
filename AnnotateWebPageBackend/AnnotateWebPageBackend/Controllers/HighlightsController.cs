@@ -49,16 +49,65 @@ namespace AnnotateWebPageBackend.Controllers
 
         public IHttpActionResult Post([FromBody]Highlight Highlight)
         {
-            var insertedHighlight = HighlightModels.InsertHighlight(Highlight);
-
-            if (insertedHighlight != null)
+            if (Highlight.id == 0) //insert
             {
-                return Created(
-                    Url.Link("GetHighlightUrl", new { id = insertedHighlight.id }),
-                    insertedHighlight);
+                var insertedHighlight = HighlightModels.InsertHighlight(Highlight);
+
+                if (insertedHighlight != null)
+                {
+                    return Created(
+                        Url.Link("GetHighlightUrl", new { id = insertedHighlight.id }),
+                        insertedHighlight);
+                }
+                else
+                    return BadRequest();
             }
-            else
-                return BadRequest();
+            else if (Highlight.id == -1) //query
+            {
+                var highlights = HighlightModels.GetHighlightsByUserAndUrl(Highlight.user_id, Highlight.web_page);
+
+                if (highlights == null)
+                {
+                    return NotFound();
+                }
+
+                List<RawHighlight> raws = new List<RawHighlight>();
+                foreach (var item in highlights)
+                {
+                    raws.Add(convertToRaw(item));
+                }
+
+                var json = JsonConvert.SerializeObject(raws);
+                return Ok(json);
+            }
+
+            return BadRequest();
+        }
+
+        private RawHighlight convertToRaw(Highlight hg)
+        {
+            RawHighlight raw = new RawHighlight();
+            raw.id = hg.id;
+            raw.user_id = hg.user_id;
+            raw.web_page = hg.web_page;
+            raw.start = hg.start;
+            raw.end = hg.end;
+
+            return raw;
+        }
+
+        class RawHighlight
+        {
+
+            public int id { get; set; }
+
+            public string user_id { get; set; }
+
+            public string web_page { get; set; }
+
+            public string start { get; set; }
+
+            public string end { get; set; }
         }
     }
 }
