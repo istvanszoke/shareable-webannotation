@@ -21,7 +21,7 @@ function pageOnload() {
     }
     else
     {
-       
+
         welcome.innerHTML = 'Welcome to WebAnnotator!';
     }
 }
@@ -37,7 +37,7 @@ function handleUser(action) {
         getToken.open('GET', 'https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=' + token);
         getToken.onload = function () {
             console.log(getToken.response);
-            userId = userId = JSON.parse(getToken.response).id;            
+            userId = userId = JSON.parse(getToken.response).id;
             userName = JSON.parse(getToken.response).name;
 
             if (localStorage.getItem("userId") === null) {
@@ -63,7 +63,7 @@ function handleUser(action) {
                 case 'login':
                     var getUserById = new XMLHttpRequest();
                     getUserById.open('GET', url + 'Users/' + userId);
-                    getUserById.onload = function () {                       
+                    getUserById.onload = function () {
                         welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
                     };
                     getUserById.send();
@@ -91,12 +91,12 @@ function pasteSelection() {
             var text = document.getElementById('text');
             text.innerHTML = response.data;
             /*
-            chrome.tabs.sendMessage(tab[0].id, 
+            chrome.tabs.sendMessage(tab[0].id,
                                     {method: "select",
                                      start: respone.start,
                                      end: respone.end},
                                     function (response2){
-                                        
+
                                     }
                                     )
             */
@@ -124,10 +124,12 @@ function selectHighlight() {
                 highlight.id = 0;
                 highlight.user_id = userId;
                 highlight.web_page = tab[0].url;
-                highlight.start = response.start;
-                highlight.end = response.end;
+                highlight.start = JSON.stringify(response.start);
+                highlight.end = JSON.stringify(response.end);
                 var jsonHighlight = JSON.stringify(highlight);
-                post.send(jsonHighlight);                
+                post.onload = function () {}
+                console.log(jsonHighlight);
+                post.send(jsonHighlight);
             }
             else
             {
@@ -141,11 +143,31 @@ function selectHighlight() {
 function getAnnotation(){
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        var get = new XMLHttpRequest();
-        get.open('GET', url + 'Highlights/' + userId + "/" + tab[0].url);
-        get.onload = function () {                       
-            welcomeUser(get, 200, 'Welcome', 'Error: User does not exist.');
-            };
-        get.send();
+        var post = new XMLHttpRequest();
+        post.open('POST', url + 'Highlights');
+        post.setRequestHeader('Content-type', 'application/json');
+
+        var highlight = new Object();
+        highlight.id = -1; //query
+        highlight.user_id = userId;
+        highlight.web_page = tab[0].url;
+        highlight.start = null;
+        highlight.end = null;
+        var jsonHighlight = JSON.stringify(highlight);
+
+        post.onreadystatechange = function () {
+            var resp = post.response;
+            var obj = JSON.parse(resp);
+            obj = JSON.parse(obj);
+            for (i = 0; i < obj.length; i++){
+                obj[i].start = JSON.parse(obj[i].start);
+                obj[i].end = JSON.parse(obj[i].end);
+            }
+            //select and list
+
+            console.log(post.response)
+        }
+
+        post.send(jsonHighlight);
     });
 }
