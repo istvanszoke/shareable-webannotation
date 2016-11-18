@@ -24,7 +24,7 @@ function pageOnload() {
         welcome.innerHTML = defaultWelcomeText;
     }
 }
-       
+
 function logoutUser() {
     localStorage.setItem('userId', null);
     localStorage.setItem('userName', null);
@@ -97,16 +97,6 @@ function pasteSelection() {
         function (response) {
             var text = document.getElementById('text');
             text.innerHTML = response.data;
-            /*
-            chrome.tabs.sendMessage(tab[0].id, 
-                                    {method: 'select',
-                                     start: respone.start,
-                                     end: respone.end},
-                                    function (response2){
-                                        
-                                    }
-                                    )
-            */
         });
     });
 }
@@ -119,7 +109,7 @@ function highlightInsertionCallback(request, statusCode, text, errorText) {
 function selectHighlight() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        chrome.tabs.sendMessage(tab[0].id, { method: 'getBlock' },
+        chrome.tabs.sendMessage(tab[0].id, { method: 'select' },
         function (response) {
             if (userId !== null) {
                 var post = new XMLHttpRequest();
@@ -134,7 +124,7 @@ function selectHighlight() {
                 var jsonHighlight = JSON.stringify(highlight);
                 post.onload = function () {}
                 console.log(jsonHighlight);
-                post.send(jsonHighlight);                
+                post.send(jsonHighlight);
             }
             else {
                 var welcome = document.getElementById('welcome');
@@ -160,16 +150,19 @@ function getAnnotation() {
         var jsonHighlight = JSON.stringify(highlight);
 
         post.onreadystatechange = function () {
-            var resp = post.response;
-            var obj = JSON.parse(resp);
-            obj = JSON.parse(obj);
-            for (i = 0; i < obj.length; i++){
-                obj[i].start = JSON.parse(obj[i].start);
-                obj[i].end = JSON.parse(obj[i].end);
-            }
-            //select and list
+            if (this.readyState === 4 && this.status === 200){
+                var resp = post.response;
+                var obj = JSON.parse(resp);
+                obj = JSON.parse(obj);
+                for (i = 0; i < obj.length; i++){
+                    obj[i].start = JSON.parse(obj[i].start);
+                    obj[i].end = JSON.parse(obj[i].end);
+                }
+                chrome.tabs.sendMessage(tab[0].id, { method: 'selectFetched', fetched: obj},
+                function (response) {});
 
-            console.log(post.response)
+                console.log(post.response)
+            }
         }
 
         post.send(jsonHighlight);

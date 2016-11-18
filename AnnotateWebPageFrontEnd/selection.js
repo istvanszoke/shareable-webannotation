@@ -1,62 +1,78 @@
-﻿debugger;
 chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.method == "getSelection")
         sendResponse({ data: window.getSelection().toString() });
-    if (request.method == "getBlock") {
-        //Get the range of a selection and find out the id of the DOM objects.
-        var range = window.getSelection().getRangeAt(0);
-
+    if (request.method == "select") {
+        var range = window.getSelection().getRangeAt(0);    
         var start = range.startContainer;
         var level = 0;
         var startOffset = range.startOffset;
         var startPositionJSON = { "offset" : startOffset.toString(),
                                   "elements" : []};
-
         startPositionJSON = getPositionJSON(start, startPositionJSON, level);
+
+        console.log("startpos" + JSON.stringify(startPositionJSON));
 
         var end = range.endContainer;
         level = 0;
         var endOffset = range.endOffset;
         var endPositionJSON = { "offset" : endOffset.toString(),
                                 "elements" : []};
-
         endPositionJSON = getPositionJSON(end, endPositionJSON, level);
 
-        //var extracted = range.extractContents();
-        //extracted.appendChild(document.createElement("style"));
-
-
-
+        console.log("endpos" + JSON.stringify(endPositionJSON));
 
         styleElementsInRange(range);
-        /*var startElem = getElementByPosition(startPositionJSON);
-        var endElem = getElementByPosition(endPositionJSON);
-
-        var range2 = document.createRange();
-        range2.setStart(startElem, 0);
-        range2.setEnd(endElem, 0);*/
 
         sendResponse({ "start" : startPositionJSON,
                        "end" : endPositionJSON});
 
     }
-    if (request.method == "select")
-    {
-
+    if (request.method == "selectFetched"){
+        var doc = document;
+        rangeJSON = request.fetched;
+        for (var i = 0; i < rangeJSON.length; i++){
+            styleFetchedElements(rangeJSON[i]);
+        }
     }
     else
         sendResponse({}); // snub them.
 });
 
+function styleFetchedElements(rangeJSON){
+    console.log("fetched start" + JSON.stringify(rangeJSON.start));
+    console.log("fetched end" + JSON.stringify(rangeJSON.end));
 
+    var start = getElementByPosition(rangeJSON.start);
+    var end = getElementByPosition(rangeJSON.end);
+    var startOffset = rangeJSON.start.offset;
+    var endOffset = rangeJSON.end.offset;
+
+    var range = document.createRange();
+    range.setStart(start, startOffset);
+    range.setEnd(end, endOffset);
+
+    styleElementsInRange(range);
+}
 
 
 function getElementByPosition(position){
-    var root = document.documentElement;
+    var root = window.document.documentElement;
     var elem = root;
+    var lastIdIndex = 0;
     for (i = 1; i < position.elements.length; i++){
+        if (position.elements[i].id !== ""){
+            lastIdIndex = i;
+        }
+
+    }
+    elem = document.getElementById(position.elements[lastIdIndex].id);
+    for (i = lastIdIndex; i < position.elements.length; i++){
         if (elem.nodeType != 3) {
-            elem = elem.children[elem.childElementCount - position.elements[i].remainingSiblings - 1];
+            if (i == position.elements.length-1){
+                elem = elem.childNodes[0];
+            }else {
+                elem = elem.childNodes[elem.childNodes.length - position.elements[i+1].remainingSiblings - 1];
+            }
         }
     }
 
@@ -70,19 +86,20 @@ function getPositionJSON(current, position, level){
         return position;
 
     if (current.nodeType == 3) {
-        position = getPositionJSON(current.parentElement, position, level);
+        position = getPositionJSON(current.parentNode, position, level);
     }
     else {
         var remainingSiblingsCount = 0;
         var sibling = current;
-        while (sibling.nextElementSibling !== null){
+        while (sibling.nextSibling !== null){
             remainingSiblingsCount++;
-            sibling = sibling.nextElementSibling;
+            sibling = sibling.nextSibling;
         }
         elem = {"remainingSiblings" : remainingSiblingsCount,
-                "childs" : current.childElementCount};
+                "childs" : current.childElementCount,
+                "id" : current.id};
         position.elements.unshift(elem);
-        position = getPositionJSON(current.parentElement, position, level);
+        position = getPositionJSON(current.parentNode, position, level);
     }
 
     return position;
