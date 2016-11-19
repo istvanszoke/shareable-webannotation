@@ -32,19 +32,6 @@ namespace AnnotateWebPageBackend.Controllers
             }
             return Ok(Highlight);
         }
-        
-        [Route("api/Highlights/User/{id}/{url}", Name = "GetHighlightsByUser")]
-        public IHttpActionResult GetHighlightsByUserAndUrl(string id, string url)
-        {
-            var highlights = HighlightModels.GetHighlightsByUserAndUrl(id, url);
-            
-            if (highlights == null)
-            {
-                return NotFound();
-            }
-            var json = JsonConvert.SerializeObject(highlights);
-            return Ok(json);
-        }
 
 
         public IHttpActionResult Post([FromBody]Highlight Highlight)
@@ -81,6 +68,14 @@ namespace AnnotateWebPageBackend.Controllers
                 return Ok(json);
             }
 
+            return BadRequest();
+        }
+
+        [Route("api/Highlights/{id}", Name = "DeleteHighlight")]
+        public IHttpActionResult Delete(int id)
+        {
+            if (HighlightModels.deleteHighlight(id))
+                return Ok();
             return BadRequest();
         }
 

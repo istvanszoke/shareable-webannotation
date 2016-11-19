@@ -104,5 +104,20 @@ namespace AnnotateWebPageBackend.Models
                 return null;
             }
         }
+
+        internal bool deleteHighlight(int highlightId)
+        {
+            using (var db = new AnnotateWebPageDBEntities())
+            {
+                Highlight entittie = db.Highlight.Where(s => s.id == highlightId).FirstOrDefault<Highlight>();
+                if (entittie != null)
+                {
+                    db.Highlight.Remove(entittie);
+                    db.SaveChanges();
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

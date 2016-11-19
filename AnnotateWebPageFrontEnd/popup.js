@@ -151,6 +151,7 @@ function getAnnotation() {
 
         post.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200){
+                console.log(post.response)
                 var resp = post.response;
                 var obj = JSON.parse(resp);
                 obj = JSON.parse(obj);
@@ -160,8 +161,6 @@ function getAnnotation() {
                 }
                 chrome.tabs.sendMessage(tab[0].id, { method: 'selectFetched', fetched: obj},
                 function (response) {});
-
-                console.log(post.response)
             }
         }
 
