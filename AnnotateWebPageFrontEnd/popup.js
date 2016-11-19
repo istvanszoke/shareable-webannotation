@@ -122,26 +122,28 @@ function sendComment() {
 }
 
 function getComments() {
-
-    var getComments = new XMLHttpRequest();
-    getComments.open('GET', url + 'Comments');
-    getComments.onload = function () {
-        var commentsArray = JSON.parse(getComments.response);
-        console.log(commentsArray);
-        var label = document.getElementById('clickcomments');
-        label.style.visibility = 'visible';
-        var div = document.getElementById('annotations');
-        while (div.firstChild) {
-            div.removeChild(div.firstChild);
-        }
-        for (i = 0; i < commentsArray.length; i++) {
-            console.log(commentsArray[i]);
-            if (commentsArray[i].user_id == userId) {
-                addTextAreas(commentsArray[i].id, commentsArray[i].text, commentsArray[i].color);
+    chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+    function (tab) {
+        var getComments = new XMLHttpRequest();
+        getComments.open('GET', url + 'Comments');
+        getComments.onload = function () {
+            var commentsArray = JSON.parse(getComments.response);
+            console.log(commentsArray);
+            var label = document.getElementById('clickcomments');
+            label.style.visibility = 'visible';
+            var div = document.getElementById('annotations');
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            for (i = 0; i < commentsArray.length; i++) {
+                console.log(commentsArray[i]);
+                if (commentsArray[i].user_id == userId && commentsArray[i].web_page == tab[0].url) {
+                    addTextAreas(commentsArray[i].id, commentsArray[i].text, commentsArray[i].color);
+                }
             }
         }
-    }
-    getComments.send();
+        getComments.send();
+    });
 }
 
 function modifyComment() {
