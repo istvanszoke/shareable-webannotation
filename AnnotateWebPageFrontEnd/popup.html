@@ -3,7 +3,7 @@
 <head>
     <script src="jquery-1.8.3.min.js"></script>
     <script src="popup.js"></script>
-    <!-- Forr�s: http://jscolor.com/-->
+    <!-- Source: http://jscolor.com/-->
     <script src="jscolor.js"></script>
     <style>
         body {
@@ -21,7 +21,7 @@
             width: 250px;
         }
 
-        button, input, textarea, div {
+        button, input, textarea, div, body {
             margin: 2px;
             font-family: 'Helvetica';
             font-size: 15px;
@@ -39,11 +39,11 @@
             text-decoration: none;
         }
 
-        button:hover {
-            background: #3cb0fd;
-            background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
-            text-decoration: none;
-        }
+            button:hover {
+                background: #3cb0fd;
+                background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+                text-decoration: none;
+            }
 
         textarea {
             border-radius: 6px;
@@ -60,6 +60,10 @@
         #icon {
             height: 12px;
         }
+
+        #clickcomments{
+            visibility:hidden;
+        }
     </style>
 </head>
 <body>
@@ -73,12 +77,22 @@
         <button id="register">Register</button>
     </div>
     <br />
-    <textarea id="text"> </textarea><br /><br />
-    <button id="paste">Paste Selection</button>
-    <button id="select">Select</button>
+    <div>
+        To select text: <button id="select">Select</button><br /><br />
+        Write your comment:<br />
+        <textarea id="text"> </textarea><br />
+        To save comment: <button id="send">Send</button><br />
+        To modify comment: <button id="modify">Modify</button><br />
+        To delete comment: <button id="delete">Delete</button>
+    </div>
+    <!--<button id="paste">Paste Selection</button>-->
     <button id="getmyannotations"> Get my annotations </button>
-    <button id="add">addInputFields</button>
-    <button id="colorpicker" class="jscolor {valueElement: 'color_value'}">Pick a color</button>
-    <div id="annotations"> </div>
+    <!--<button id="getmycomments"> Get my comments </button>-->
+    <!--<button id="add">addInputFields</button>-->
+    <button id="colorpicker" class="jscolor {valueElement: 'color_value'}">Pick a color</button><br /><br />
+    <label id="clickcomments">Click on comments, you want to edit or delete:</label><br /><br />
+    <div id="annotations">
+        
+    </div>
 </body>
 </html>

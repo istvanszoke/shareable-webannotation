@@ -8,6 +8,7 @@
         <EntityTypeShape EntityType="AnnotateWebPageDBModel.User" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="AnnotateWebPageDBModel.Highlight" Width="1.5" PointX="3" PointY="4.5" />
         <AssociationConnector Association="AnnotateWebPageDBModel.FK_Highlight_User" />
+        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Comment" Width="1.5" PointX="3.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
