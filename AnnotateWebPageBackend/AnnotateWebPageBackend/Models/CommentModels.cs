@@ -8,13 +8,26 @@ namespace AnnotateWebPageBackend.Models
 {
     public class CommentModels
     {
-        public IEnumerable<Comment> GetComments()
+        public class CommentModel
+        {
+            public int id { get; set; }
+            public string text { get; set; }
+            public string color { get; set; }
+            public string user_id { get; set; }
+            public string web_page { get; set; }
+        }
+        public IEnumerable<CommentModel> GetComments()
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.Comment.ToList();
+                    List<CommentModel> comments = new List<CommentModel>();
+                    foreach (var comment in db.Comment)
+                    {
+                        comments.Add(new CommentModel() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page });
+                    }
+                    return comments;
                 }
 
             }
@@ -24,13 +37,19 @@ namespace AnnotateWebPageBackend.Models
             }
         }
 
-        public Comment GetComment(int id)
+        public CommentModel GetComment(int id)
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.Comment.ToList().SingleOrDefault(comment => comment.id == id);
+                    foreach (var comment in db.Comment)
+                    {
+                        if (comment.id == id) return new CommentModel() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page };
+                    }
+
+                    return null;
+
                 }
 
             }
@@ -41,15 +60,31 @@ namespace AnnotateWebPageBackend.Models
 
         }
 
-        public Comment InsertComment(Comment comment)
+        public List<CommentModel> GetComment(string userId, string url)
+        {
+            using (var db = new AnnotateWebPageDBEntities())
+            {
+                List<CommentModel> comments = new List<CommentModel>();
+                foreach (var comment in db.Comment)
+                {
+                    if (comment.user_id.Equals(userId) && comment.web_page.Equals(url))
+                        comments.Add(new CommentModel() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page });
+                }
+                return comments;
+
+            }
+        }
+
+        public CommentModel InsertComment(CommentModel comment)
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                        db.Comment.Add(comment);
-                        db.SaveChanges();
-                        return comment;
+                    Comment newComment = new Comment() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page };
+                    db.Comment.Add(newComment);
+                    db.SaveChanges();
+                    return comment;
                 }
 
             }
@@ -59,7 +94,7 @@ namespace AnnotateWebPageBackend.Models
             }
         }
 
-        public bool UpdateComment(int id, Comment newComment)
+        public bool UpdateComment(int id, CommentModel newComment)
         {
             try
             {
@@ -69,6 +104,7 @@ namespace AnnotateWebPageBackend.Models
                     if (comment != null)
                     {
                         comment.text = newComment.text;
+                        comment.color = newComment.color;
                         db.SaveChanges();
                         return true;
                     }

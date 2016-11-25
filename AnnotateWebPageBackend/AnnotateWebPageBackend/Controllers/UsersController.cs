@@ -15,7 +15,7 @@ namespace AnnotateWebPageBackend.Controllers
     public class UsersController : ApiController
     {
         UserModels userModels = new UserModels();
-        public IEnumerable<User> Get()
+        public IEnumerable<UserModel> Get()
         {            
             return userModels.GetUsers();
         }
@@ -32,7 +32,7 @@ namespace AnnotateWebPageBackend.Controllers
             return Ok(user.name);
         }
 
-        public IHttpActionResult Post([FromBody]User user)
+        public IHttpActionResult Post([FromBody]UserModel user)
         {
             var insertedUser = userModels.InsertUser(user);
 
@@ -40,7 +40,7 @@ namespace AnnotateWebPageBackend.Controllers
             {
                 return Created(
                     Url.Link("GetUserUrl", new { id = insertedUser.id }),
-                    insertedUser);
+                    insertedUser.name);
             }
             else
                 return BadRequest();

@@ -26,7 +26,7 @@ namespace AnnotateWebPageBackend.EntitiyDataModels
         }
     
         public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<Highlight> Highlight { get; set; }
         public virtual DbSet<Comment> Comment { get; set; }
+        public virtual DbSet<Highlight> Highlight { get; set; }
     }
 }

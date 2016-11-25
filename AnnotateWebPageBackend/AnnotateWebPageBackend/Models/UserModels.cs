@@ -6,15 +6,26 @@ using System.Web;
 
 namespace AnnotateWebPageBackend.Models
 {
+    public class UserModel{
+        public string id { get; set; }
+        public string name { get; set; }
+    }
+
     public class UserModels
     {
-        public IEnumerable<User> GetUsers()
+        public IEnumerable<UserModel> GetUsers()
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.User.ToList();
+                    List<UserModel> users = new List<UserModel>();
+                    foreach (var user in db.User)
+                    {
+                        users.Add(new UserModel() { id = user.id, name = user.name });
+                    }
+
+                    return users;
                 }
 
             }
@@ -24,13 +35,18 @@ namespace AnnotateWebPageBackend.Models
             }
         }
 
-        public User GetUser(string id)
+        public UserModel GetUser(string id)
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.User.ToList().SingleOrDefault(user => user.id.Equals(id));
+                    foreach (var user in db.User)
+                    {
+                        if (user.id.Equals(id)) return new UserModel() { id = user.id, name = user.name };
+                    }
+
+                    return null;
                 }
 
             }
@@ -42,7 +58,7 @@ namespace AnnotateWebPageBackend.Models
 
         }
 
-        public User InsertUser(User user)
+        public UserModel InsertUser(UserModel user)
         {
             try
             {
@@ -51,7 +67,8 @@ namespace AnnotateWebPageBackend.Models
                     var resp = GetUser(user.id);
                     if (GetUser(user.id) == null)
                     {
-                        db.User.Add(user);
+                        User newUser = new User() { id = user.id, name = user.name };
+                        db.User.Add(newUser);
                         db.SaveChanges();
                         return user;
                     }

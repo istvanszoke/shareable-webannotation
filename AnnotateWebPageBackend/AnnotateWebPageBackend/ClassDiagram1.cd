@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AnnotateWebPageBackend.EntitiyDataModels.Comment">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAgAAAAAAAAACAAAAAAAAAAAACIAAAAAAAAAgA=</HashCode>
+      <FileName>EntitiyDataModels\Comment.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AnnotateWebPageBackend.EntitiyDataModels.Highlight">
+    <Position X="5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAiAAAAAAAgACAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>EntitiyDataModels\Highlight.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AnnotateWebPageBackend.EntitiyDataModels.User">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <Members>
+      <Property Name="Comment" Hidden="true" />
+      <Property Name="Highlight" Hidden="true" />
+      <Method Name="User" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAgA=</HashCode>
+      <FileName>EntitiyDataModels\User.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

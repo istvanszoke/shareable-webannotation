@@ -8,13 +8,30 @@ namespace AnnotateWebPageBackend.Models
 {
     public class HighlightModels
     {
-        public IEnumerable<Highlight> GetHighlights()
+        public class HighlightModel
+        {
+            public int id { get; set; }
+
+            public string user_id { get; set; }
+
+            public string web_page { get; set; }
+
+            public string start { get; set; }
+
+            public string end { get; set; }
+        }
+        public IEnumerable<HighlightModel> GetHighlights()
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.Highlight.ToList();
+                    List<HighlightModel> highlights = new List<HighlightModel>();
+                    foreach (var highlight in db.Highlight)
+                    {
+                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
+                    }
+                    return highlights;
                 }
 
             }
@@ -24,13 +41,18 @@ namespace AnnotateWebPageBackend.Models
             }
         }
 
-        public Highlight GetHighlight(int id)
+        public HighlightModel GetHighlight(int id)
         {
             try
             {
                 using (var db = new AnnotateWebPageDBEntities())
                 {
-                    return db.Highlight.ToList().SingleOrDefault(highlight => highlight.id.Equals(id));
+                    foreach (var highlight in db.Highlight)
+                    {
+                        if (highlight.id == id) return new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end };
+                    }
+
+                    return null;
                 }
 
             }
@@ -41,22 +63,26 @@ namespace AnnotateWebPageBackend.Models
 
         }
 
-        public List<Highlight> GetHighlightsByUserAndUrl(string userId, string url)
+        public List<HighlightModel> GetHighlight(string userId, string url)
         {
             using (var db = new AnnotateWebPageDBEntities())
             {
-                return db.Highlight.Where(s => (s.user_id == userId))
-                                   .Where(s => (s.web_page == url)).ToList<Highlight>();
-                
+                List<HighlightModel> highlights = new List<HighlightModel>();
+                foreach (var highlight in db.Highlight)
+                {
+                    if (highlight.user_id.Equals(userId) && highlight.web_page.Equals(url))
+                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
+                }
+                return highlights;
+
             }
-            return null;
         }
 
-        public Highlight InsertHighlight(Highlight highlight)
+        public HighlightModel InsertHighlight(HighlightModel highlight)
         {
             try
             {
-                Highlight old = null;
+                HighlightModel old = null;
                 using (var db = new AnnotateWebPageDBEntities())
                 {
                     old = GetHighlight(highlight.id);
@@ -66,35 +92,36 @@ namespace AnnotateWebPageBackend.Models
                     // generate new id
                     using (var db = new AnnotateWebPageDBEntities())
                     {
-                        var nextId = db.Highlight.ToList().Max(hg => hg.id) + 1;
-                        highlight.id = nextId;
-                        db.Highlight.Add(highlight);
+                        //var nextId = db.Highlight.ToList().Max(hg => hg.id) + 1;
+                        //highlight.id = nextId;
+                        db.Highlight.Add(new Highlight() { id = old.id, user_id = old.user_id, web_page = old.web_page, start = old.start, end = old.end });
                         db.SaveChanges();
                     }
 
-                    return highlight;
+                    return old;
                 }
                 else //update
                 {
+                    Highlight updateHighlight =null;
                     using (var db = new AnnotateWebPageDBEntities())
                     {
-                        old = db.Highlight.Where(s => s.id == highlight.id).FirstOrDefault<Highlight>();
+                        updateHighlight = db.Highlight.Where(s => s.id == highlight.id).FirstOrDefault<Highlight>();
                     }
 
-                    if (old != null)
+                    if (updateHighlight != null)
                     {
-                        old.user_id = highlight.user_id;
-                        old.web_page = highlight.web_page;
-                        old.start = highlight.start;
-                        old.end = highlight.end;
+                        updateHighlight.user_id = highlight.user_id;
+                        updateHighlight.web_page = highlight.web_page;
+                        updateHighlight.start = highlight.start;
+                        updateHighlight.end = highlight.end;
                     }
 
                     using (var db = new AnnotateWebPageDBEntities())
                     {
-                        db.Entry(old).State = System.Data.Entity.EntityState.Modified;
+                        db.Entry(updateHighlight).State = System.Data.Entity.EntityState.Modified;
                         db.SaveChanges();
                     }
-                    return old;
+                    return highlight;
                 }
 
             }
@@ -105,14 +132,14 @@ namespace AnnotateWebPageBackend.Models
             }
         }
 
-        internal bool deleteHighlight(int highlightId)
+        public bool DeleteHighlight(int highlightId)
         {
             using (var db = new AnnotateWebPageDBEntities())
             {
-                Highlight entittie = db.Highlight.Where(s => s.id == highlightId).FirstOrDefault<Highlight>();
-                if (entittie != null)
+                Highlight highlight = db.Highlight.Where(s => s.id == highlightId).FirstOrDefault<Highlight>();
+                if (highlight != null)
                 {
-                    db.Highlight.Remove(entittie);
+                    db.Highlight.Remove(highlight);
                     db.SaveChanges();
                     return true;
                 }
