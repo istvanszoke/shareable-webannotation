@@ -19,6 +19,8 @@ namespace AnnotateWebPageBackend.Models
             public string start { get; set; }
 
             public string end { get; set; }
+
+            public string color { get; set; }
         }
         public IEnumerable<HighlightModel> GetHighlights()
         {
@@ -29,7 +31,7 @@ namespace AnnotateWebPageBackend.Models
                     List<HighlightModel> highlights = new List<HighlightModel>();
                     foreach (var highlight in db.Highlight)
                     {
-                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
+                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end, color = highlight.color });
                     }
                     return highlights;
                 }
@@ -49,7 +51,7 @@ namespace AnnotateWebPageBackend.Models
                 {
                     foreach (var highlight in db.Highlight)
                     {
-                        if (highlight.id == id) return new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end };
+                        if (highlight.id == id) return new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end, color = highlight.color };
                     }
 
                     return null;
@@ -71,7 +73,7 @@ namespace AnnotateWebPageBackend.Models
                 foreach (var highlight in db.Highlight)
                 {
                     if (highlight.user_id.Equals(userId) && highlight.web_page.Equals(url))
-                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
+                        highlights.Add(new HighlightModel() { id = highlight.id, user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end, color = highlight.color });
                 }
                 return highlights;
 
@@ -94,7 +96,7 @@ namespace AnnotateWebPageBackend.Models
                     {
                         //var nextId = db.Highlight.ToList().Max(hg => hg.id) + 1;
                         //highlight.id = nextId;
-                        Highlight newHighlight = db.Highlight.Add(new Highlight() { user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
+                        Highlight newHighlight = db.Highlight.Add(new Highlight() { user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end, color = highlight.color });
                         db.SaveChanges();
                         highlight.id = newHighlight.id;
                     }
@@ -115,6 +117,7 @@ namespace AnnotateWebPageBackend.Models
                         updateHighlight.web_page = highlight.web_page;
                         updateHighlight.start = highlight.start;
                         updateHighlight.end = highlight.end;
+                        updateHighlight.color = highlight.color;
                     }
 
                     using (var db = new AnnotateWebPageDBEntities())

@@ -24,6 +24,7 @@
           <Property Name="web_page" Type="nvarchar" MaxLength="200" Nullable="false" />
           <Property Name="start" Type="nvarchar" MaxLength="2000" Nullable="false" />
           <Property Name="end" Type="nvarchar" MaxLength="2000" Nullable="false" />
+          <Property Name="color" Type="nvarchar" MaxLength="20" Nullable="false" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -128,6 +129,7 @@
           <Property Name="start" Type="String" Nullable="false" MaxLength="2000" FixedLength="false" Unicode="true" />
           <Property Name="end" Type="String" Nullable="false" MaxLength="2000" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="User" Relationship="AnnotateWebPageDBModel.FK_Highlight_User" FromRole="Highlight" ToRole="User" />
+          <Property Name="color" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="true" />
         </EntityType>
         <Association Name="FK_Highlight_User">
           <End Type="AnnotateWebPageDBModel.User" Role="User" Multiplicity="1" />
@@ -169,6 +171,7 @@
           <EntitySetMapping Name="Highlight">
             <EntityTypeMapping TypeName="AnnotateWebPageDBModel.Highlight">
               <MappingFragment StoreEntitySet="Highlight">
+                <ScalarProperty Name="color" ColumnName="color" />
                 <ScalarProperty Name="end" ColumnName="end" />
                 <ScalarProperty Name="start" ColumnName="start" />
                 <ScalarProperty Name="web_page" ColumnName="web_page" />

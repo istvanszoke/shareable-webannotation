@@ -21,7 +21,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
 
         console.log("endpos" + JSON.stringify(endPositionJSON));
 
-        styleElementsInRange(range);
+        styleElementsInRange(range, request.color);
 
         sendResponse({ "start" : startPositionJSON,
                        "end" : endPositionJSON});
@@ -31,14 +31,14 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
         var doc = document;
         rangeJSON = request.fetched;
         for (var i = 0; i < rangeJSON.length; i++){
-            styleFetchedElements(rangeJSON[i]);
+            styleFetchedElements(rangeJSON[i], rangeJSON[i].color);
         }
     }
     else
         sendResponse({}); // snub them.
 });
 
-function styleFetchedElements(rangeJSON){
+function styleFetchedElements(rangeJSON, color){
     console.log("fetched start" + JSON.stringify(rangeJSON.start));
     console.log("fetched end" + JSON.stringify(rangeJSON.end));
 
@@ -51,7 +51,7 @@ function styleFetchedElements(rangeJSON){
     range.setStart(start, startOffset);
     range.setEnd(end, endOffset);
 
-    styleElementsInRange(range);
+    styleElementsInRange(range, color);
 }
 
 
@@ -106,35 +106,33 @@ function getPositionJSON(current, position, level){
 }
 
 
-function surroundAndStyle(range){
+function surroundAndStyle(range, color){
     var surround = document.createElement("bdi");
     range.surroundContents(surround);
-    surround.style.background =  "yellow";
+    surround.style.background =  color;
 }
 
-function styleStart(start, offset){
+function styleStart(start, offset, color){
     var rangeStart = document.createRange();
     rangeStart.setStart(start, offset);
     rangeStart.setEnd(start, start.length);
-    surroundAndStyle(rangeStart);
+    surroundAndStyle(rangeStart, color);
 }
 
-function styleEnd(end, offset){
+function styleEnd(end, offset, color){
     var rangeEnd = document.createRange();
     rangeEnd.setStart(end, 0);
     rangeEnd.setEnd(end, offset);
-    surroundAndStyle(rangeEnd);
+    surroundAndStyle(rangeEnd, color);
 }
 
-function styleElementsInRange(range) {
+function styleElementsInRange(range, color) {
     var ancestor = range.commonAncestorContainer;
     var start = range.startContainer;
     var end = range.endContainer;
 
     var before = [];
     var after = [];
-    console.log("dsgfg");
-    var color = "yellow";
 
     if (start == end){
         var surround = document.createElement("bdi");
@@ -142,17 +140,17 @@ function styleElementsInRange(range) {
         surround.style.background = color;
         }
     else{
-        styleStart(start, range.startOffset);
-        styleEnd(end, range.endOffset);
-    while (start.parentNode !== ancestor &&
-           start !== ancestor) {
-        var el = start;
-        while (el.nextSibling){
-                before.push(el = el.nextSibling);
-            if (el.nodeType == 1)
-                    el.style.background = color;
-        }
-        start = start.parentNode;
+        styleStart(start, range.startOffset, color);
+        styleEnd(end, range.endOffset, color);
+        while (start.parentNode !== ancestor &&
+               start !== ancestor) {
+            var el = start;
+            while (el.nextSibling){
+                    before.push(el = el.nextSibling);
+                if (el.nodeType == 1)
+                        el.style.background = color;
+            }
+            start = start.parentNode;
     }
 
 

@@ -46,6 +46,9 @@
                 text-decoration: none;
             }
 
+
+
+
         #colorpicker, #send, #modify, #delete, #colorpicker, #select, #getmyannotations {
             width: 70%;
             margin: 3px;
@@ -99,6 +102,7 @@
             width: 60px;
             float: right
         }
+
     </style>
 </head>
 <body>
@@ -115,7 +119,7 @@
     <div id="logindiv">
         Pick color first for comment and selection:
         <div id="buttonsdiv">
-            <button id="colorpicker" class="jscolor"></button>
+            <input id="colorpicker" class="jscolor {closable:true,closeText:'Close me!'}" value="e4e520">
             <button id="select">Select Text</button><br /><br />
         </div>
         Write your comment:<br />
@@ -137,8 +141,8 @@
         <!--<button id="add">addInputFields</button>-->
         <br /><br />
         <label id="clickcomments">Comments:</label>
-        To change color for comment: <button id="colorpicker2" class="jscolor"></button>
-      
+        To change color for comment: <input id="colorpicker2" class="jscolor {closable:true,closeText:'Close me!'}" value="e4e520">
+
         <div id="textareadiv">
         </div>
 

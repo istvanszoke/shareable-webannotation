@@ -26,6 +26,7 @@ function pageOnload() {
         //logindiv.style.visibility = 'visible';
         welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
         getComments();
+        getAnnotation();
     }
     else {
         welcome.innerHTML = defaultWelcomeText;
@@ -192,19 +193,6 @@ function deleteComment() {
     }
 }
 
-
-//function pasteSelection() {
-//    chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
-//    function (tab) {
-//        chrome.tabs.sendMessage(tab[0].id, { method: 'getSelection' },
-//        function (response) {
-//            var text = document.getElementById('text');
-//            text.innerHTML = response.data;
-//        });
-//    });
-//}
-
-
 function highlightInsertionCallback(request, statusCode, text, errorText) {
     var text = document.getElementById('text');
     text.innerHtml = 'status: ' + statusCode;
@@ -214,7 +202,8 @@ function selectHighlight() {
     if (userId !== null) {
         chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
         function (tab) {
-            chrome.tabs.sendMessage(tab[0].id, { method: 'select' },
+            chrome.tabs.sendMessage(tab[0].id, { method: 'select',
+                                                 color: document.getElementById('colorpicker').style.backgroundColor},
             function (response) {
                 var post = new XMLHttpRequest();
                 post.open('POST', url + 'Highlights');
@@ -225,11 +214,13 @@ function selectHighlight() {
                 highlight.web_page = encodeURI(tab[0].url);
                 highlight.start = JSON.stringify(response.start);
                 highlight.end = JSON.stringify(response.end);
+                highlight.color = document.getElementById('colorpicker').style.backgroundColor;
                 var jsonHighlight = JSON.stringify(highlight);
+                console.log(jsonHighlight);
                 post.onload = function () {
                     if (post.status === 201) {
                         var resp = JSON.parse(post.response);
-                        addHighlightArea(resp.id);
+                        addHighlightArea(resp.id, document.getElementById('colorpicker').style.backgroundColor);
                     }
                 }
                 console.log(jsonHighlight);
@@ -264,7 +255,7 @@ function getAnnotation(urlAddress) {
                 for (i = 0; i < obj.length; i++) {
                     obj[i].start = JSON.parse(obj[i].start);
                     obj[i].end = JSON.parse(obj[i].end);
-                    addHighlightArea(obj[i].id);
+                    addHighlightArea(obj[i].id, obj[i].color);
                 }
                 chrome.tabs.sendMessage(tab[0].id, { method: 'selectFetched', fetched: obj },
                 function (response) { });
@@ -278,12 +269,13 @@ function getAnnotation(urlAddress) {
 
 var reloadStarted = false;
 
-function addHighlightArea(id) {
+function addHighlightArea(id, color) {
     var hgdiv = document.createElement('div');
     hgdiv.id = "hg" + id.toString();
     var textarea = document.createElement('textarea');
     textarea.value = "Highlight " + id.toString();
     textarea.readOnly = true;
+    textarea.style.backgroundColor = color;
     var button = document.createElement('button');
     button.textContent = "X";
     button.onclick = function () {
@@ -298,8 +290,21 @@ function addHighlightArea(id) {
             chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
             function (tab) {
                 reloadStarted = true;
+                //subscribe to the reload ready event
+                chrome.tabs.update(null, { url: tab[0].url }, function (tab) {
+                    chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+                        console.log(info.status);
+                        if (info.status == "complete") {
+                            if (reloadStarted){
+                                getAnnotation();
+                                reloadStarted = false;
+                            }
+                        }
+                    });
+                });
                 chrome.tabs.reload(tab[0].id);
             });
+
         }
         deleteHighlight.send();
     }
@@ -335,7 +340,7 @@ function addTextAreas(id, text, color) {
     var xbutton = document.createElement('button');
     xbutton.id = 'xbutton';
     xbutton.textContent = 'X';
-    xbutton.onclick = function () {        
+    xbutton.onclick = function () {
         commentId = id;
         deleteComment();
     }
@@ -346,10 +351,10 @@ function addTextAreas(id, text, color) {
     //colorpickerbutton.style.width = '80px';
     //colorpickerbutton.style.float = 'right';
 
-   // annotationdiv.appendChild(colorpickerbutton);    
+   // annotationdiv.appendChild(colorpickerbutton);
     annotationdiv.appendChild(pencilbutton);
     annotationdiv.appendChild(xbutton);
-    
+
 
     div.appendChild(textarea);
     div.appendChild(annotationdiv);
