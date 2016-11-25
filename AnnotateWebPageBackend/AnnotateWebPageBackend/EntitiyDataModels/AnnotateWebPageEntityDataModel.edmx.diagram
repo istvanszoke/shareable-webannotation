@@ -6,9 +6,10 @@
     <edmx:Diagrams>
       <Diagram DiagramId="7e3155bddf8242839582d645f47fe490" Name="Diagram1">
         <EntityTypeShape EntityType="AnnotateWebPageDBModel.User" Width="1.5" PointX="0.75" PointY="0.75" />
-        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Highlight" Width="1.5" PointX="3" PointY="4.5" />
+        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Comment" Width="1.5" PointX="4.25" PointY="0.75" />
+        <AssociationConnector Association="AnnotateWebPageDBModel.FK_Comment_User" />
+        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Highlight" Width="1.5" PointX="2.25" PointY="3.125" />
         <AssociationConnector Association="AnnotateWebPageDBModel.FK_Highlight_User" />
-        <EntityTypeShape EntityType="AnnotateWebPageDBModel.Comment" Width="1.5" PointX="3.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

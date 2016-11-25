@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using static AnnotateWebPageBackend.Models.CommentModels;
 
 namespace AnnotateWebPageBackend.Controllers
 {
@@ -15,7 +16,7 @@ namespace AnnotateWebPageBackend.Controllers
     {
         CommentModels commentModels = new CommentModels();
 
-        public IEnumerable<Comment> Get()
+        public IEnumerable<CommentModel> Get()
         {
             return commentModels.GetComments();
         }
@@ -31,7 +32,14 @@ namespace AnnotateWebPageBackend.Controllers
             return Ok(comment);
         }
 
-        public IHttpActionResult Post([FromBody]Comment comment)
+        [Route("api/Comments/byUserAndUrl")]
+        public IHttpActionResult Get([FromUri] string userId, [FromUri]  string url)
+        {
+            var comments = commentModels.GetComment(userId, url);
+            return Ok(comments);
+        }
+
+        public IHttpActionResult Post([FromBody]CommentModel comment)
         {
             var insertedComment = commentModels.InsertComment(comment);
 
@@ -46,7 +54,7 @@ namespace AnnotateWebPageBackend.Controllers
         }
 
         [Route("api/Comments/{id}", Name = "UpdateCommentUrl")]
-        public IHttpActionResult Put(int id, [FromBody] Comment comment)
+        public IHttpActionResult Put(int id, [FromBody] CommentModel comment)
         {
             if (commentModels.UpdateComment(id, comment))
                 return Ok();

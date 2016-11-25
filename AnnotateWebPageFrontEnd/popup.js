@@ -9,6 +9,8 @@ $(function () {
     $('#modify').click(function () { modifyComment(); });
     $('#delete').click(function () { deleteComment(); });
     $('#getmyannotations').click(function () { getAnnotation(); });
+    $('#generatelinkbutton').click(function () { generateLink(); });
+    $('#getlinkbutton').click(function () { getLink(); });
     //$('#getmycomments').click(function () { getComments(); });
     //$('#add').click(function () { addTextAreas(); });
 });
@@ -19,14 +21,18 @@ var userName = null;
 var defaultWelcomeText = 'Welcome to WebAnnotator!';
 function pageOnload() {
     var welcome = document.getElementById('welcome');
+    //var logindiv = document.getElementById('logindiv');
     if (localStorage.getItem('userId') !== null && localStorage.getItem('userId') !== 'null') {
         userId = localStorage.getItem('userId');
         userName = localStorage.getItem('userName');
+
+        //logindiv.style.visibility = 'visible';
         welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
         getComments();
     }
     else {
         welcome.innerHTML = defaultWelcomeText;
+        //logindiv.style.visibility = 'collapse';
     }
 }
 
@@ -35,7 +41,8 @@ function logoutUser() {
     localStorage.setItem('userName', null);
     userId = userName = null;
     welcome.innerHTML = defaultWelcomeText;
-
+    //var logindiv = document.getElementById('logindiv');
+    //logindiv.style.visibility = 'collapse';
 }
 function handleUser(action) {
     chrome.identity.getAuthToken({
@@ -91,7 +98,9 @@ function welcomeUser(request, statusCode, text, errorText) {
     var welcome = document.getElementById('welcome');
     if (request.status == statusCode) {
         var name = JSON.parse(request.response);
-        welcome.innerHTML = text + ' ' + name + ' !';;
+        welcome.innerHTML = text + ' ' + name + ' !';
+        //var logindiv = document.getElementById('logindiv');
+        //logindiv.style.visibility = 'visible';
     }
     else welcome.innerHTML = errorText;
 }
@@ -106,11 +115,12 @@ function sendComment() {
         comment.text = document.getElementById('text').value;
         comment.color = document.getElementById('colorpicker').style.backgroundColor;
         comment.user_id = userId;
-        comment.web_page = tab[0].url;
+        comment.web_page = encodeURI(tab[0].url);
+        console.log(encodeURI(tab[0].url));
         console.log(comment.text);
         var jsonComment = JSON.stringify(comment);
         post.onload = function () {
-            //console.log(post.response.statusCode);
+            console.log(post.response.statusCode);
             if (post.status == 201) {
                 getComments();
             }
@@ -121,11 +131,13 @@ function sendComment() {
 
 }
 
-function getComments() {
+function getComments(urlAddress) {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var getComments = new XMLHttpRequest();
-        getComments.open('GET', url + 'Comments');
+        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Comments/byUserAndUrl?userId=' + userId + '&url=' + tab[0].url;
+        console.log(urlAddress);
+        getComments.open('GET', urlAddress);
         getComments.onload = function () {
             var commentsArray = JSON.parse(getComments.response);
             console.log(commentsArray);
@@ -136,10 +148,7 @@ function getComments() {
                 div.removeChild(div.firstChild);
             }
             for (i = 0; i < commentsArray.length; i++) {
-                console.log(commentsArray[i]);
-                if (commentsArray[i].user_id == userId && commentsArray[i].web_page == tab[0].url) {
-                    addTextAreas(commentsArray[i].id, commentsArray[i].text, commentsArray[i].color);
-                }
+                addTextAreas(commentsArray[i].id, commentsArray[i].text, commentsArray[i].color);
             }
         }
         getComments.send();
@@ -225,27 +234,19 @@ function selectHighlight() {
     }
 }
 
-function getAnnotation() {
+function getAnnotation(urlAddress) {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
-        var post = new XMLHttpRequest();
-        post.open('POST', url + 'Highlights');
-        post.setRequestHeader('Content-type', 'application/json');
+        var get = new XMLHttpRequest();
+        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Highlights/byUserAndUrl?userId=' + userId + '&url=' + tab[0].url;
+        console.log(urlAddress);
+        get.open('GET', urlAddress);
 
-        var highlight = new Object();
-        highlight.id = -1; //query
-        highlight.user_id = userId;
-        highlight.web_page = tab[0].url;
-        highlight.start = null;
-        highlight.end = null;
-        var jsonHighlight = JSON.stringify(highlight);
-
-        post.onreadystatechange = function () {
+        get.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
-                console.log(post.response)
-                var resp = post.response;
-                var obj = JSON.parse(resp);
-                obj = JSON.parse(obj);
+                
+                var obj = JSON.parse(get.response);
+                console.log(get.response)
                 for (i = 0; i < obj.length; i++) {
                     obj[i].start = JSON.parse(obj[i].start);
                     obj[i].end = JSON.parse(obj[i].end);
@@ -255,7 +256,7 @@ function getAnnotation() {
             }
         }
 
-        post.send(jsonHighlight);
+        get.send();
     });
 }
 
@@ -273,4 +274,38 @@ function addTextAreas(id, text, color) {
     }
     console.log(textarea.id);
     document.getElementById('annotations').appendChild(textarea);
+}
+
+function generateLink() {
+    chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+    function (tab) {
+        var linktextarea = document.getElementById('linktextarea');
+        //http://localhost:5066/api/Comments/byUserAndUrl?userId=117891975809840147555&url=http://localhost:5066/
+        linktextarea.value = url + 'Comments/byUserAndUrl?userId=' + userId + '&url=' + encodeURI(tab[0].url);
+    });
+}
+
+function getLink() {
+    var linktextarea = document.getElementById('linktextarea');
+
+    
+    var link = linktextarea.value;
+    var array = link.split('url=');
+    var urlAddress = array[1];
+    console.log(urlAddress);
+
+    chrome.tabs.update(null, { url: urlAddress }, function (tab) {
+        chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+            console.log(info.status)
+            if (info.status == "complete") {
+                getComments(link);
+                var res = link.replace('Comments', 'Highlights');
+                getAnnotation(res);
+            }
+        });
+        
+    });
+    
+    
+
 }

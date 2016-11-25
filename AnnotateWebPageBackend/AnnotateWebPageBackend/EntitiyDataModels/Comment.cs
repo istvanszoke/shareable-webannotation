@@ -19,5 +19,7 @@ namespace AnnotateWebPageBackend.EntitiyDataModels
         public string color { get; set; }
         public string user_id { get; set; }
         public string web_page { get; set; }
+    
+        public virtual User User { get; set; }
     }
 }
