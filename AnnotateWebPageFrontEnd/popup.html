@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css"
+          href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css">
     <script src="jquery-1.8.3.min.js"></script>
     <script src="popup.js"></script>
     <!-- Source: http://jscolor.com/-->
     <script src="jscolor.js"></script>
+
     <style>
         body {
             height: auto;
@@ -58,8 +61,12 @@
             text-align: center;
         }
 
-        #clickcomments{
-            visibility:collapse
+        #login, #logout {
+            width: 30%;
+        }
+
+        #clickcomments {
+            visibility: collapse;
         }
 
         #buttonsdiv, #userdiv {
@@ -70,18 +77,28 @@
             width: 45%;
         }
 
-        #highlights div textarea{
+        #highlights div textarea {
             width: 70%;
             height: 20px;
             border-radius: 6px;
             border: 1px solid #3498db;
             outline: none;
-            float: left
-        }
-        #highlights div button{
-            float: right
+            float: left;
         }
 
+        #highlights div button {
+            float: right;
+        }
+
+        .annotation {
+            float: left;
+            width:72%;
+        }
+
+        #pencilbutton, #xbutton {
+            width: 60px;
+            float: right
+        }
     </style>
 </head>
 <body>
@@ -92,22 +109,21 @@
     <div id="userdiv">
         <button id="login">Login</button>
         <button id="logout">Logout</button>
-        <button id="register">Register</button>
     </div>
 
     <br />
     <div id="logindiv">
+        Pick color first for comment and selection:
         <div id="buttonsdiv">
+            <button id="colorpicker" class="jscolor"></button>
             <button id="select">Select Text</button><br /><br />
         </div>
         Write your comment:<br />
         <textarea id="text"> </textarea><br /><br />
 
+
         <div id="buttonsdiv">
-            <button id="colorpicker" class="jscolor {valueElement: 'color_value'}">Pick a color</button>
             <button id="send">Save Comment</button>
-            <button id="modify">Modify Comment</button>
-            <button id="delete">Delete Comment</button>
             <button id="getmyannotations"> Get my annotations </button>
         </div>
         <br />
@@ -119,13 +135,16 @@
         <!--<button id="paste">Paste Selection</button>-->
         <!--<button id="getmycomments"> Get my comments </button>-->
         <!--<button id="add">addInputFields</button>-->
-        <div>
-            <label id="clickcomments">Click on comments, you want to edit or delete:</label><br /><br />
+        <br /><br />
+        <label id="clickcomments">Comments:</label>
+        To change color for comment: <button id="colorpicker2" class="jscolor"></button>
+      
+        <div id="textareadiv">
         </div>
-        <div id="annotations"></div>
 
 
-    <div id="highlights"></div>
+        <div id="highlights"></div>
+    </div>
 
 </body>
 </html>

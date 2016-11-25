@@ -1,13 +1,10 @@
 $(function () {
     $('#document').ready(pageOnload);
-    $('#register').click(function () { handleUser('register'); });
     $('#login').click(function () { handleUser('login'); });
     $('#logout').click(function () { logoutUser(); });
     //$('#paste').click(function () { pasteSelection(); });
     $('#select').click(function () { selectHighlight(); });
     $('#send').click(function () { sendComment(); });
-    $('#modify').click(function () { modifyComment(); });
-    $('#delete').click(function () { deleteComment(); });
     $('#getmyannotations').click(function () { getAnnotation(); });
     $('#generatelinkbutton').click(function () { generateLink(); });
     $('#getlinkbutton').click(function () { getLink(); });
@@ -44,7 +41,34 @@ function logoutUser() {
     //var logindiv = document.getElementById('logindiv');
     //logindiv.style.visibility = 'collapse';
 }
-function handleUser(action) {
+
+function register() {
+    var post = new XMLHttpRequest();
+    post.open('POST', url + 'Users');
+    post.setRequestHeader('Content-type', 'application/json');
+    var user = new Object();
+    user.id = userId;
+    user.name = userName;
+    var jsonUser = JSON.stringify(user);
+
+    post.onload = function () {
+        if (post.status == 201) {
+            login();
+        }
+    }
+    post.send(jsonUser);
+}
+
+function login() {
+    var getUserById = new XMLHttpRequest();
+    getUserById.open('GET', url + 'Users/' + userId);
+    getUserById.onload = function () {
+        welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
+    };
+    getUserById.send();
+}
+
+function handleUser() {
     chrome.identity.getAuthToken({
         interactive: true
     }, function (token) {
@@ -60,34 +84,11 @@ function handleUser(action) {
             userName = JSON.parse(getToken.response).name;
 
             if (localStorage.getItem('userId') === null || localStorage.getItem('userId') === 'null') {
+                register();
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('userName', userName);
             }
-
-            switch (action) {
-                case 'register':
-                    var post = new XMLHttpRequest();
-                    post.open('POST', url + 'Users');
-                    post.setRequestHeader('Content-type', 'application/json');
-                    var user = new Object();
-                    user.id = userId;
-                    user.name = userName;
-                    var jsonUser = JSON.stringify(user);
-
-                    post.onload = function () {
-                        welcomeUser(post, 201, 'Registration successful. Please log in', 'Error: User already exists.');
-                    }
-                    post.send(jsonUser);
-                    break;
-                case 'login':
-                    var getUserById = new XMLHttpRequest();
-                    getUserById.open('GET', url + 'Users/' + userId);
-                    getUserById.onload = function () {
-                        welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
-                    };
-                    getUserById.send();
-                    break;
-            }
+            else login();
         };
         getToken.send();
     });
@@ -120,7 +121,7 @@ function sendComment() {
         console.log(comment.text);
         var jsonComment = JSON.stringify(comment);
         post.onload = function () {
-            console.log(post.response.statusCode);
+            console.log(post.status);
             if (post.status == 201) {
                 getComments();
             }
@@ -135,15 +136,15 @@ function getComments(urlAddress) {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var getComments = new XMLHttpRequest();
-        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Comments/byUserAndUrl?userId=' + userId + '&url=' + tab[0].url;
-        console.log(urlAddress);
+        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Comments/byUserAndUrl?userId=' + userId + '&url=' + encodeURI(tab[0].url);
+        console.log('urladd: ' + urlAddress);
         getComments.open('GET', urlAddress);
         getComments.onload = function () {
             var commentsArray = JSON.parse(getComments.response);
             console.log(commentsArray);
             var label = document.getElementById('clickcomments');
             label.style.visibility = 'visible';
-            var div = document.getElementById('annotations');
+            var div = document.getElementById('textareadiv');
             while (div.firstChild) {
                 div.removeChild(div.firstChild);
             }
@@ -162,9 +163,11 @@ function modifyComment() {
         updateComment.open('PUT', url + 'Comments/' + commentId);
         updateComment.setRequestHeader('Content-type', 'application/json');
         var comment = new Object();
-        comment.text = document.getElementById('text').value;
+        comment.text = document.getElementById('textarea' + commentId).value;
+        comment.color = document.getElementById('colorpicker2').style.backgroundColor;
         var jsonComment = JSON.stringify(comment);
         updateComment.onload = function () {
+            console.log(updateComment.status);
             if (updateComment.status == 200) {
                 commentId = null;
                 getComments();
@@ -219,12 +222,12 @@ function selectHighlight() {
                 var highlight = new Object();
                 highlight.id = 0;
                 highlight.user_id = userId;
-                highlight.web_page = tab[0].url;
+                highlight.web_page = encodeURI(tab[0].url);
                 highlight.start = JSON.stringify(response.start);
                 highlight.end = JSON.stringify(response.end);
                 var jsonHighlight = JSON.stringify(highlight);
                 post.onload = function () {
-                    if (post.status === 201){
+                    if (post.status === 201) {
                         var resp = JSON.parse(post.response);
                         addHighlightArea(resp.id);
                     }
@@ -244,7 +247,7 @@ function getAnnotation(urlAddress) {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var get = new XMLHttpRequest();
-        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Highlights/byUserAndUrl?userId=' + userId + '&url=' + tab[0].url;
+        if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Highlights/byUserAndUrl?userId=' + userId + '&url=' + encodeURI(tab[0].url);
         console.log(urlAddress);
         get.open('GET', urlAddress);
         //remove all gighlight boxes
@@ -275,7 +278,7 @@ function getAnnotation(urlAddress) {
 
 var reloadStarted = false;
 
-function addHighlightArea(id){
+function addHighlightArea(id) {
     var hgdiv = document.createElement('div');
     hgdiv.id = "hg" + id.toString();
     var textarea = document.createElement('textarea');
@@ -283,7 +286,7 @@ function addHighlightArea(id){
     textarea.readOnly = true;
     var button = document.createElement('button');
     button.textContent = "X";
-    button.onclick = function() {
+    button.onclick = function () {
         var deleteHighlight = new XMLHttpRequest();
         deleteHighlight.open('DELETE', url + "Highlights/" + id);
         deleteHighlight.onload = function () {
@@ -296,10 +299,10 @@ function addHighlightArea(id){
             function (tab) {
                 reloadStarted = true;
                 chrome.tabs.reload(tab[0].id);
-                } );
-            }
-        deleteHighlight.send();
+            });
         }
+        deleteHighlight.send();
+    }
 
     hgdiv.appendChild(textarea);
     hgdiv.appendChild(button);
@@ -308,18 +311,49 @@ function addHighlightArea(id){
 
 var commentId = null;
 function addTextAreas(id, text, color) {
+    var div = document.getElementById('textareadiv');
     var textarea = document.createElement('textarea');
-    textarea.id = id;
+    textarea.id = 'textarea' + id;
     textarea.value = text;
-    textarea.readOnly = true;
+    textarea.className = 'annotation';
     textarea.style.backgroundColor = color;
-    textarea.onclick = function () {
-        var commentwritertextarea = document.getElementById('text');
-        commentwritertextarea.value = textarea.value;
-        commentId = textarea.id;
+
+    var annotationdiv = document.createElement('div');
+    annotationdiv.id = 'annotationsdiv';
+
+    var pencilbutton = document.createElement('button');
+    pencilbutton.id = 'pencilbutton';
+
+    var i = document.createElement('i');
+    i.className = 'icon-pencil icon-white';
+    pencilbutton.appendChild(i);
+    pencilbutton.onclick = function () {
+        commentId = id;
+        modifyComment();
     }
-    console.log(textarea.id);
-    document.getElementById('annotations').appendChild(textarea);
+
+    var xbutton = document.createElement('button');
+    xbutton.id = 'xbutton';
+    xbutton.textContent = 'X';
+    xbutton.onclick = function () {        
+        commentId = id;
+        deleteComment();
+    }
+
+    //var colorpickerbutton = document.createElement('button');
+    //colorpickerbutton.id = 'colorpicker' + id;
+    //colorpickerbutton.className = 'jscolor';
+    //colorpickerbutton.style.width = '80px';
+    //colorpickerbutton.style.float = 'right';
+
+   // annotationdiv.appendChild(colorpickerbutton);    
+    annotationdiv.appendChild(pencilbutton);
+    annotationdiv.appendChild(xbutton);
+    
+
+    div.appendChild(textarea);
+    div.appendChild(annotationdiv);
+    jscolor.installByClassName('jscolor');
 }
 
 function generateLink() {
