@@ -2,7 +2,7 @@ chrome.extension.onMessage.addListener(function (request, sender, sendResponse) 
     if (request.method == "getSelection")
         sendResponse({ data: window.getSelection().toString() });
     if (request.method == "select") {
-        var range = window.getSelection().getRangeAt(0);    
+        var range = window.getSelection().getRangeAt(0);
         var start = range.startContainer;
         var level = 0;
         var startOffset = range.startOffset;
@@ -85,54 +85,28 @@ function getPositionJSON(current, position, level){
     if (current == null)
         return position;
 
-    if (current.nodeType == 3) {
-        position = getPositionJSON(current.parentNode, position, level);
+
+    var remainingSiblingsCount = 0;
+    var sibling = current;
+    while (sibling.nextSibling !== null){
+        remainingSiblingsCount++;
+        sibling = sibling.nextSibling;
     }
-    else {
-        var remainingSiblingsCount = 0;
-        var sibling = current;
-        while (sibling.nextSibling !== null){
-            remainingSiblingsCount++;
-            sibling = sibling.nextSibling;
-        }
-        elem = {"remainingSiblings" : remainingSiblingsCount,
-                "childs" : current.childElementCount,
-                "id" : current.id};
-        position.elements.unshift(elem);
-        position = getPositionJSON(current.parentNode, position, level);
-    }
+    var elem = {"remainingSiblings" : remainingSiblingsCount,
+            "childs" : current.childNodes.length,
+            "id" : (current.nodeType == 3) ? "" : current.id};
+    position.elements.unshift(elem);
+    position = getPositionJSON(current.parentNode, position, level);
+
 
     return position;
 }
 
 
-// this function returns the position of current in the DOM
-function getPosition(current, text, level){
-    level++;
-    if (current == null)
-        return text;
-
-    if (current.nodeType == 3) {
-        text = getPosition(current.parentElement, text, level);
-    }
-    else {
-        var remainingSiblingsCount = 0;
-        var sibling = current;
-        while (sibling.nextElementSibling !== null){
-            remainingSiblingsCount++;
-            sibling = sibling.nextElementSibling;
-        }
-        text +="rS" + remainingSiblingsCount + "c" + current.childElementCount + ";";
-        text = getPosition(current.parentElement, text, level);
-    }
-
-    return text;
-}
-
 function surroundAndStyle(range){
     var surround = document.createElement("bdi");
     range.surroundContents(surround);
-    surround.style.background = "yellow";
+    surround.style.background =  "yellow";
 }
 
 function styleStart(start, offset){
@@ -157,7 +131,7 @@ function styleElementsInRange(range) {
     var before = [];
     var after = [];
     console.log("dsgfg");
-    var color = "yellow";//document.getElementById('colorpicker').style.backgroundColor;
+    var color = "yellow";
 
     if (start == end){
         var surround = document.createElement("bdi");

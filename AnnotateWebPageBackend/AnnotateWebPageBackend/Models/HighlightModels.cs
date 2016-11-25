@@ -94,11 +94,12 @@ namespace AnnotateWebPageBackend.Models
                     {
                         //var nextId = db.Highlight.ToList().Max(hg => hg.id) + 1;
                         //highlight.id = nextId;
-                        db.Highlight.Add(new Highlight() { id = old.id, user_id = old.user_id, web_page = old.web_page, start = old.start, end = old.end });
+                        Highlight newHighlight = db.Highlight.Add(new Highlight() { user_id = highlight.user_id, web_page = highlight.web_page, start = highlight.start, end = highlight.end });
                         db.SaveChanges();
+                        highlight.id = newHighlight.id;
                     }
 
-                    return old;
+                    return highlight;
                 }
                 else //update
                 {

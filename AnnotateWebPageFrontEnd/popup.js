@@ -201,6 +201,7 @@ function deleteComment() {
 //    });
 //}
 
+
 function highlightInsertionCallback(request, statusCode, text, errorText) {
     var text = document.getElementById('text');
     text.innerHtml = 'status: ' + statusCode;
@@ -222,7 +223,12 @@ function selectHighlight() {
                 highlight.start = JSON.stringify(response.start);
                 highlight.end = JSON.stringify(response.end);
                 var jsonHighlight = JSON.stringify(highlight);
-                post.onload = function () { }
+                post.onload = function () {
+                    if (post.status === 201){
+                        var resp = JSON.parse(post.response);
+                        addHighlightArea(resp.id);
+                    }
+                }
                 console.log(jsonHighlight);
                 post.send(jsonHighlight);
             });
@@ -241,23 +247,63 @@ function getAnnotation(urlAddress) {
         if (typeof (urlAddress) === 'undefined') urlAddress = url + 'Highlights/byUserAndUrl?userId=' + userId + '&url=' + tab[0].url;
         console.log(urlAddress);
         get.open('GET', urlAddress);
+        //remove all gighlight boxes
+        var div = document.getElementById('highlights');
+        while (div.firstChild) {
+            div.removeChild(div.firstChild);
+        }
 
         get.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
-                
+
                 var obj = JSON.parse(get.response);
                 console.log(get.response)
                 for (i = 0; i < obj.length; i++) {
                     obj[i].start = JSON.parse(obj[i].start);
                     obj[i].end = JSON.parse(obj[i].end);
+                    addHighlightArea(obj[i].id);
                 }
                 chrome.tabs.sendMessage(tab[0].id, { method: 'selectFetched', fetched: obj },
                 function (response) { });
+
             }
         }
 
         get.send();
     });
+}
+
+var reloadStarted = false;
+
+function addHighlightArea(id){
+    var hgdiv = document.createElement('div');
+    hgdiv.id = "hg" + id.toString();
+    var textarea = document.createElement('textarea');
+    textarea.value = "Highlight " + id.toString();
+    textarea.readOnly = true;
+    var button = document.createElement('button');
+    button.textContent = "X";
+    button.onclick = function() {
+        var deleteHighlight = new XMLHttpRequest();
+        deleteHighlight.open('DELETE', url + "Highlights/" + id);
+        deleteHighlight.onload = function () {
+            if (deleteHighlight.status == 200) {
+                hgdiv.parentNode.removeChild(hgdiv);
+            }
+
+            //reload the active tab
+            chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+            function (tab) {
+                reloadStarted = true;
+                chrome.tabs.reload(tab[0].id);
+                } );
+            }
+        deleteHighlight.send();
+        }
+
+    hgdiv.appendChild(textarea);
+    hgdiv.appendChild(button);
+    document.getElementById('highlights').appendChild(hgdiv);
 }
 
 var commentId = null;
@@ -288,7 +334,7 @@ function generateLink() {
 function getLink() {
     var linktextarea = document.getElementById('linktextarea');
 
-    
+
     var link = linktextarea.value;
     var array = link.split('url=');
     var urlAddress = array[1];
@@ -303,9 +349,9 @@ function getLink() {
                 getAnnotation(res);
             }
         });
-        
+
     });
-    
-    
+
+
 
 }
