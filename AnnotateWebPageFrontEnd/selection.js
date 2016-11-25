@@ -57,6 +57,8 @@ function styleFetchedElements(rangeJSON){
 
 function getElementByPosition(position){
     var root = window.document.documentElement;
+    while (root.parentNode != null)
+        root = root.parentNode;
     var elem = root;
     var lastIdIndex = 0;
     for (i = 1; i < position.elements.length; i++){
@@ -65,12 +67,13 @@ function getElementByPosition(position){
         }
 
     }
-    elem = document.getElementById(position.elements[lastIdIndex].id);
+    var lastId = position.elements[lastIdIndex].id;
+    if (lastId !== ""){
+        elem = document.getElementById(lastId);
+    }
     for (i = lastIdIndex; i < position.elements.length; i++){
         if (elem.nodeType != 3) {
-            if (i == position.elements.length-1){
-                elem = elem.childNodes[0];
-            }else {
+            if (elem.childNodes.length > 0){
                 elem = elem.childNodes[elem.childNodes.length - position.elements[i+1].remainingSiblings - 1];
             }
         }
@@ -94,7 +97,7 @@ function getPositionJSON(current, position, level){
     }
     var elem = {"remainingSiblings" : remainingSiblingsCount,
             "childs" : current.childNodes.length,
-            "id" : (current.nodeType == 3) ? "" : current.id};
+            "id" : (typeof current.id === 'undefined') ? "" : current.id};
     position.elements.unshift(elem);
     position = getPositionJSON(current.parentNode, position, level);
 
