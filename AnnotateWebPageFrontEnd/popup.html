@@ -49,7 +49,7 @@
 
 
 
-        #colorpicker, #send, #modify, #delete, #colorpicker, #select, #getmyannotations {
+         #send, #modify, #delete, #select, #getmyannotations {
             width: 70%;
             margin: 3px;
         }
@@ -68,8 +68,8 @@
             width: 30%;
         }
 
-        #clickcomments {
-            visibility: collapse;
+        #clickhighlights {
+            clear: left;
         }
 
         #buttonsdiv, #userdiv {
@@ -103,6 +103,18 @@
             float: right
         }
 
+        #colorpicker{
+            width: 60%;
+            float:none;            
+        }
+        .jscolor{
+            width: 20%;
+            float: right;
+            text-align:center;
+            border-radius: 6px;
+            border: 1px solid;
+        }
+
     </style>
 </head>
 <body>
@@ -116,10 +128,16 @@
     </div>
 
     <br />
+    <div id="logoutdiv">
+        <div>
+            <button id="getlinkbutton2">Get link</button>
+        </div>
+        <textarea id="linktextarea2"></textarea>
+    </div>
     <div id="logindiv">
         Pick color first for comment and selection:
         <div id="buttonsdiv">
-            <input id="colorpicker" class="jscolor {closable:true,closeText:'Close me!'}" value="e4e520">
+            <input id="colorpicker" class="jscolor" value="ffff00">
             <button id="select">Select Text</button><br /><br />
         </div>
         Write your comment:<br />
@@ -140,15 +158,12 @@
         <!--<button id="getmycomments"> Get my comments </button>-->
         <!--<button id="add">addInputFields</button>-->
         <br /><br />
-        <label id="clickcomments">Comments:</label>
-        To change color for comment: <input id="colorpicker2" class="jscolor {closable:true,closeText:'Close me!'}" value="e4e520">
+        <label id="clickcomments">Comments:</label>       
 
-        <div id="textareadiv">
-        </div>
+        <div id="textareadiv"></div>
 
-
+        <label id="clickhighlights">Highlights:</label>
         <div id="highlights"></div>
     </div>
-
 </body>
 </html>
