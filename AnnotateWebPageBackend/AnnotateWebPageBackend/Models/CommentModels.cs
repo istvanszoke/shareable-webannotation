@@ -62,16 +62,23 @@ namespace AnnotateWebPageBackend.Models
 
         public List<CommentModel> GetComment(string userId, string url)
         {
-            using (var db = new AnnotateWebPageDBEntities())
+            try
             {
-                List<CommentModel> comments = new List<CommentModel>();
-                foreach (var comment in db.Comment)
+                using (var db = new AnnotateWebPageDBEntities())
                 {
-                    if (comment.user_id.Equals(userId) && comment.web_page.Equals(url))
-                        comments.Add(new CommentModel() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page });
-                }
-                return comments;
+                    List<CommentModel> comments = new List<CommentModel>();
+                    foreach (var comment in db.Comment)
+                    {
+                        if (comment.user_id.Equals(userId) && comment.web_page.Equals(url))
+                            comments.Add(new CommentModel() { id = comment.id, text = comment.text, color = comment.color, user_id = comment.user_id, web_page = comment.web_page });
+                    }
+                    return comments;
 
+                }
+            }
+            catch (Exception e)
+            {
+                throw;
             }
         }
 

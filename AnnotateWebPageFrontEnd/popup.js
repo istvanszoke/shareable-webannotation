@@ -1,36 +1,50 @@
 $(function () {
     $('#document').ready(pageOnload);
-    $('#login').click(function () { handleUser('login'); });
+    $('#login').click(function () { handleUser(); });
     $('#logout').click(function () { logoutUser(); });
-    //$('#paste').click(function () { pasteSelection(); });
     $('#select').click(function () { selectHighlight(); });
     $('#send').click(function () { sendComment(); });
     $('#getmyannotations').click(function () { getAnnotation(); });
     $('#generatelinkbutton').click(function () { generateLink(); });
     $('#getlinkbutton').click(function () { getLink(); });
-    //$('#getmycomments').click(function () { getComments(); });
-    //$('#add').click(function () { addTextAreas(); });
+    $('#getlinkbutton2').click(function () { getLink(); });
+
 });
 
-var url = 'http://localhost:5066/api/';
+var mainurl = 'http://localhost:5066/';
+var url = mainurl + 'api/';
 var userId = null;
 var userName = null;
 var defaultWelcomeText = 'Welcome to WebAnnotator!';
+
+function ping() {
+    $.ajax({
+        url: mainurl,
+        success: function (result) {
+            localStorage.setItem('serverOnline', true);
+        },
+        error: function (result) {
+            localStorage.setItem('serverOnline', false);
+        }
+    });
+}
+
 function pageOnload() {
+
     var welcome = document.getElementById('welcome');
-    //var logindiv = document.getElementById('logindiv');
-    if (localStorage.getItem('userId') !== null && localStorage.getItem('userId') !== 'null') {
+    ping();
+    if (localStorage.getItem('userId') !== null && localStorage.getItem('userId') !== 'null' && localStorage.getItem('serverOnline')) {
         userId = localStorage.getItem('userId');
         userName = localStorage.getItem('userName');
 
-        //logindiv.style.visibility = 'visible';
+        setControlsVisibility(true);
         welcome.innerHTML = 'Welcome' + ' ' + userName + ' !';
         getComments();
         getAnnotation();
     }
     else {
         welcome.innerHTML = defaultWelcomeText;
-        //logindiv.style.visibility = 'collapse';
+        setControlsVisibility(false);
     }
 }
 
@@ -39,8 +53,22 @@ function logoutUser() {
     localStorage.setItem('userName', null);
     userId = userName = null;
     welcome.innerHTML = defaultWelcomeText;
-    //var logindiv = document.getElementById('logindiv');
-    //logindiv.style.visibility = 'collapse';
+    setControlsVisibility(false);
+}
+
+function setControlsVisibility(isLoggedIn) {
+    var logindiv = document.getElementById('logindiv');
+    var logoutdiv = document.getElementById('logoutdiv');
+
+
+    if (isLoggedIn) {
+        logindiv.style.display = 'block';
+        logoutdiv.style.display = 'none';
+    }
+    else {
+        logindiv.style.display = 'none';
+        logoutdiv.style.display = 'block';
+    }
 }
 
 function register() {
@@ -53,9 +81,7 @@ function register() {
     var jsonUser = JSON.stringify(user);
 
     post.onload = function () {
-        if (post.status == 201) {
-            login();
-        }
+        login();
     }
     post.send(jsonUser);
 }
@@ -64,7 +90,7 @@ function login() {
     var getUserById = new XMLHttpRequest();
     getUserById.open('GET', url + 'Users/' + userId);
     getUserById.onload = function () {
-        welcomeUser(getUserById, 200, 'Welcome', 'Error: User does not exist.');
+        welcomeUser(getUserById, 200, 'Welcome', 'Error: Failed to login. Try again.');
     };
     getUserById.send();
 }
@@ -73,14 +99,11 @@ function handleUser() {
     chrome.identity.getAuthToken({
         interactive: true
     }, function (token) {
-        if (chrome.runtime.lastError) {
-            alert(chrome.runtime.lastError.message);
-            return;
-        }
+
         var getToken = new XMLHttpRequest();
         getToken.open('GET', 'https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=' + token);
         getToken.onload = function () {
-            //console.log(getToken.response);
+
             userId = JSON.parse(getToken.response).id;
             userName = JSON.parse(getToken.response).name;
 
@@ -101,10 +124,12 @@ function welcomeUser(request, statusCode, text, errorText) {
     if (request.status == statusCode) {
         var name = JSON.parse(request.response);
         welcome.innerHTML = text + ' ' + name + ' !';
-        //var logindiv = document.getElementById('logindiv');
-        //logindiv.style.visibility = 'visible';
+        setControlsVisibility(true);
     }
-    else welcome.innerHTML = errorText;
+    else {
+        welcome.innerHTML = errorText;
+        setControlsVisibility(false);
+    }
 }
 
 function sendComment() {
@@ -143,8 +168,7 @@ function getComments(urlAddress) {
         getComments.onload = function () {
             var commentsArray = JSON.parse(getComments.response);
             console.log(commentsArray);
-            var label = document.getElementById('clickcomments');
-            label.style.visibility = 'visible';
+
             var div = document.getElementById('textareadiv');
             while (div.firstChild) {
                 div.removeChild(div.firstChild);
@@ -165,7 +189,7 @@ function modifyComment() {
         updateComment.setRequestHeader('Content-type', 'application/json');
         var comment = new Object();
         comment.text = document.getElementById('textarea' + commentId).value;
-        comment.color = document.getElementById('colorpicker2').style.backgroundColor;
+        comment.color = document.getElementById('colorpicker' + commentId).style.backgroundColor;
         var jsonComment = JSON.stringify(comment);
         updateComment.onload = function () {
             console.log(updateComment.status);
@@ -202,8 +226,10 @@ function selectHighlight() {
     if (userId !== null) {
         chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
         function (tab) {
-            chrome.tabs.sendMessage(tab[0].id, { method: 'select',
-                                                 color: document.getElementById('colorpicker').style.backgroundColor},
+            chrome.tabs.sendMessage(tab[0].id, {
+                method: 'select',
+                color: document.getElementById('colorpicker').style.backgroundColor
+            },
             function (response) {
                 var post = new XMLHttpRequest();
                 post.open('POST', url + 'Highlights');
@@ -251,6 +277,7 @@ function getAnnotation(urlAddress) {
             if (this.readyState === 4 && this.status === 200) {
 
                 var obj = JSON.parse(get.response);
+
                 console.log(get.response)
                 for (i = 0; i < obj.length; i++) {
                     obj[i].start = JSON.parse(obj[i].start);
@@ -276,7 +303,9 @@ function addHighlightArea(id, color) {
     textarea.value = "Highlight " + id.toString();
     textarea.readOnly = true;
     textarea.style.backgroundColor = color;
+    textarea.style.height = '8%';
     var button = document.createElement('button');
+
     button.textContent = "X";
     button.onclick = function () {
         var deleteHighlight = new XMLHttpRequest();
@@ -295,7 +324,7 @@ function addHighlightArea(id, color) {
                     chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
                         console.log(info.status);
                         if (info.status == "complete") {
-                            if (reloadStarted){
+                            if (reloadStarted) {
                                 getAnnotation();
                                 reloadStarted = false;
                             }
@@ -345,13 +374,12 @@ function addTextAreas(id, text, color) {
         deleteComment();
     }
 
-    //var colorpickerbutton = document.createElement('button');
-    //colorpickerbutton.id = 'colorpicker' + id;
-    //colorpickerbutton.className = 'jscolor';
-    //colorpickerbutton.style.width = '80px';
-    //colorpickerbutton.style.float = 'right';
+    var colorpickerinput = document.createElement('input');
+    colorpickerinput.id = 'colorpicker' + id;
+    colorpickerinput.className = 'jscolor';
+    colorpickerinput.value = 'ffff00';
 
-   // annotationdiv.appendChild(colorpickerbutton);
+    annotationdiv.appendChild(colorpickerinput);
     annotationdiv.appendChild(pencilbutton);
     annotationdiv.appendChild(xbutton);
 
@@ -365,13 +393,16 @@ function generateLink() {
     chrome.tabs.query({ active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
     function (tab) {
         var linktextarea = document.getElementById('linktextarea');
-        //http://localhost:5066/api/Comments/byUserAndUrl?userId=117891975809840147555&url=http://localhost:5066/
+
         linktextarea.value = url + 'Comments/byUserAndUrl?userId=' + userId + '&url=' + encodeURI(tab[0].url);
     });
 }
 
 function getLink() {
-    var linktextarea = document.getElementById('linktextarea');
+
+    var linktextarea;
+    if (userId === null) linktextarea = document.getElementById('linktextarea2');
+    else linktextarea = document.getElementById('linktextarea');
 
 
     var link = linktextarea.value;
